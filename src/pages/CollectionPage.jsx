@@ -255,7 +255,7 @@ export default function CollectionPage() {
     try {
       const ids = Array.from(selectedIds);
       const count = await bulkMarkInstallmentsAsPaid(ids);
-      setInstallments(prev => prev.map(i => ids.includes(i.id) ? { ...i, status: 'paid', payment_date: new Date() } : i));
+      setInstallments(prev => prev.map(i => ids.includes(i.id) ? { ...i, status: 'paid', payment_date: new Date(), carryover_from_partial: null } : i));
       setJustPaidIds(prev => {
         const next = new Set(prev);
         ids.forEach(id => next.add(id));
@@ -281,7 +281,7 @@ export default function CollectionPage() {
       for (const id of ids) {
         await undoMarkInstallmentAsPaid(id);
       }
-      setInstallments(prev => prev.map(i => ids.includes(i.id) ? { ...i, status: 'pending', payment_date: null, paid_amount: null } : i));
+      setInstallments(prev => prev.map(i => ids.includes(i.id) ? { ...i, status: 'pending', payment_date: null, paid_amount: null, carryover_from_partial: null } : i));
       setJustPaidIds(prev => {
         const next = new Set(prev);
         ids.forEach(id => next.delete(id));

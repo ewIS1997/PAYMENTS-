@@ -127,7 +127,7 @@ export default function AddContractPage() {
     if (total && monthly && months) {
       const expected = monthly * months;
       if (Math.abs(expected - total) > total * 0.1) {
-        newErrors.monthly_amount = `المبلغ لا يتوافق مع (${months} شهر × ${monthly}) = ${expected}`;
+        newErrors.monthly_amount = `الإجمالي لا يتوافق مع (${months} شهر × ${monthly}) = ${expected}. ملاحظة: القسط الأخير قد يختلف.`;
       }
     }
     return newErrors;

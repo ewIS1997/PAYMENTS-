@@ -184,7 +184,20 @@ export default function CustomerDetailPage() {
 
       {/* Customer Info */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">{customer.full_name}</h1>
+        <div className="flex items-center gap-4 mb-4">
+          {customer.photo ? (
+            <img 
+              src={customer.photo} 
+              alt={customer.full_name}
+              className="w-20 h-20 rounded-full object-cover border-4 border-blue-500"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-3xl font-bold text-gray-500 dark:text-gray-400">
+              {customer.full_name?.charAt(0) || '?'}
+            </div>
+          )}
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{customer.full_name}</h1>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-base text-gray-500 dark:text-gray-400">رقم الهاتف</p>
@@ -348,7 +361,10 @@ export default function CustomerDetailPage() {
                               </p>
                             )}
                           </div>
-                          <span className="text-lg font-bold text-gray-700 dark:text-gray-300 flex-shrink-0">{formatCurrency(displayAmount)}</span>
+                          <span className={`text-lg font-bold flex-shrink-0 ${inst.carryover_from_partial ? 'text-blue-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {formatCurrency(displayAmount)}
+                              {inst.carryover_from_partial && <span className="text-xs block text-blue-500">+{formatCurrency(inst.carryover_from_partial)} من قسط سابق</span>}
+                            </span>
                         </div>
                       );
                     })}

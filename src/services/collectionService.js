@@ -203,11 +203,12 @@ export async function markInstallmentAsPaid(installmentId) {
     if (idx >= 0) {
       demoData.installments[idx].status = 'paid';
       demoData.installments[idx].payment_date = new Date();
+      delete demoData.installments[idx].carryover_from_partial;
     }
     return;
   }
   const ref = doc(db, 'installments', installmentId);
-  await updateDoc(ref, { status: 'paid', payment_date: Timestamp.fromDate(new Date()), updated_at: serverTimestamp() });
+  await updateDoc(ref, { status: 'paid', payment_date: Timestamp.fromDate(new Date()), updated_at: serverTimestamp(), carryover_from_partial: null });
 }
 
 export async function markInstallmentAsLate(installmentId) {

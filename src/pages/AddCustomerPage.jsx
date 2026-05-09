@@ -14,6 +14,7 @@ export default function AddCustomerPage() {
     national_id: '',
     address: '',
     notes: '',
+    photo: '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -95,6 +96,7 @@ export default function AddCustomerPage() {
         national_id: formData.national_id.trim(),
         address: formData.address.trim(),
         notes: formData.notes.trim(),
+        photo: formData.photo,
       });
       navigate(`/customers/${customer.id}`);
     } catch (err) {
@@ -123,6 +125,48 @@ export default function AddCustomerPage() {
       )}
 
       <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        {/* Photo Upload */}
+        <div className="flex flex-col items-center mb-4">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">صورة العميل</label>
+          <div className="relative">
+            {formData.photo ? (
+              <div className="relative w-24 h-24">
+                <img 
+                  src={formData.photo} 
+                  alt="صورة العميل" 
+                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, photo: '' }))}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <label className="w-24 h-24 rounded-full border-4 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
+                <span className="text-3xl text-gray-400">+</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData(prev => ({ ...prev, photo: reader.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        </div>
+
         <div>
           <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             الاسم الكامل <span className="text-red-500">*</span>

@@ -9,6 +9,7 @@ const EMPTY_FORM = {
   national_id: '',
   address: '',
   notes: '',
+  photo: '',
 };
 
 export default function AddCustomerModal({ isOpen, onClose, villages, existingPhones, onCreated }) {
@@ -161,6 +162,45 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
               {phoneWarning}
             </div>
           )}
+
+          {/* Photo */}
+          <div className="flex justify-center">
+            {formData.photo ? (
+              <div className="relative">
+                <img 
+                  src={formData.photo} 
+                  alt="صورة العميل" 
+                  className="w-20 h-20 rounded-full object-cover border-4 border-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, photo: '' }))}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <label className="w-20 h-20 rounded-full border-4 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
+                <span className="text-2xl text-gray-400">+</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData(prev => ({ ...prev, photo: reader.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </label>
+            )}
+          </div>
 
           {/* Name */}
           <div>
