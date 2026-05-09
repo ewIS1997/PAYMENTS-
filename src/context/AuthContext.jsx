@@ -1,65 +1,34 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../firebase/config';
+import { enableDemoMode } from '../firebase/demoMode';
 
 const AuthContext = createContext(null);
-
-const isFirebaseConfigured = import.meta.env.VITE_FIREBASE_API_KEY !== 'your_api_key_here'
-  && import.meta.env.VITE_FIREBASE_PROJECT_ID !== 'your_project_id';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) {
-      setUser({
-        uid: 'demo-user',
-        email: 'demo@installment.app',
-        displayName: 'مستخدم تجريبي',
-        isDemo: true,
-      });
-      setIsDemo(true);
-      setLoading(false);
-      return;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setIsDemo(false);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    enableDemoMode();
+    setLoading(false);
   }, []);
 
-  const loginDemo = () => {
+  const localLogin = (localUser) => {
+    enableDemoMode();
     setUser({
-      uid: 'demo-user',
-      email: 'demo@installment.app',
-      displayName: 'مستخدم تجريبي',
-      isDemo: true,
+      uid: localUser.uid,
+      email: localUser.email,
+      displayName: localUser.displayName,
+      username: localUser.username,
+      role: localUser.role,
     });
-    setIsDemo(true);
-    setLoading(false);
   };
 
-  const logout = async () => {
-    if (isDemo) {
-      setUser(null);
-      setIsDemo(false);
-      return;
-    }
-    try {
-      await signOut(auth);
-    } catch {
-      setUser(null);
-    }
+  const logout = () => {
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, loginDemo, isDemo }}>
+    <AuthContext.Provider value={{ user, loading, logout, localLogin }}>
       {children}
     </AuthContext.Provider>
   );

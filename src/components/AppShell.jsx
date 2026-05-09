@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { IconHome, IconUsers, IconMoney, IconReceipt, IconChart, IconSettings, IconLogout } from './Icons';
+import { IconHome, IconUsers, IconMoney, IconReceipt, IconChart, IconSettings, IconLogout, IconPackage } from './Icons';
 
 const navItems = [
   { path: '/', label: 'الرئيسية', Icon: IconHome },
   { path: '/customers', label: 'العملاء', Icon: IconUsers },
   { path: '/collection', label: 'التحصيل', Icon: IconMoney },
+  { path: '/products', label: 'المنتجات', Icon: IconPackage },
   { path: '/receipts', label: 'الإيصالات', Icon: IconReceipt },
   { path: '/reports', label: 'التقارير', Icon: IconChart },
   { path: '/settings', label: 'الإعدادات', Icon: IconSettings },
