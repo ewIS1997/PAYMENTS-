@@ -47,15 +47,15 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">التقارير</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">التقارير</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 space-y-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-1">الشهر</label>
+            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">الشهر</label>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setSelectedMonth(prev => (prev + 11) % 12)}
+                onClick={() => setSelectedMonth(prev => prev === 0 ? 11 : prev - 1)}
                 className="px-3 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 →
@@ -79,7 +79,7 @@ export default function ReportsPage() {
           </div>
 
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-1">السنة</label>
+            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">السنة</label>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSelectedYear(prev => prev - 1)}
@@ -125,7 +125,7 @@ export default function ReportsPage() {
 
       {loading && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="h-7 bg-gray-200 rounded w-48 mb-4 animate-pulse"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="h-20 bg-gray-100 rounded animate-pulse"></div>
@@ -133,7 +133,7 @@ export default function ReportsPage() {
               <div className="h-20 bg-gray-100 rounded animate-pulse"></div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="h-7 bg-gray-200 rounded w-40 mb-4 animate-pulse"></div>
             <div className="space-y-3">
               <div className="h-14 bg-gray-100 rounded animate-pulse"></div>
@@ -147,8 +147,8 @@ export default function ReportsPage() {
       {reportData && (
         <div className="space-y-6">
           {/* Section 1: Monthly Collection Summary */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">ملخص تحصيل {getArabicMonthName(selectedMonth)} {selectedYear}</h2>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">ملخص تحصيل {getArabicMonthName(selectedMonth)} {selectedYear}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
                 <div className="text-4xl font-bold text-green-600 mb-1">{formatCurrency(reportData.monthly.totalCollected)}</div>
@@ -166,17 +166,17 @@ export default function ReportsPage() {
           </div>
 
           {/* Section 2: Village Breakdown */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">تفصيل حسب القرية</h2>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">تفصيل حسب المدينة</h2>
             {reportData.villages.length === 0 ? (
-              <p className="text-lg text-gray-500 text-center py-4">لا توجد بيانات لهذا الشهر</p>
+              <p className="text-lg text-gray-500 dark:text-gray-400 text-center py-4">لا توجد بيانات لهذا الشهر</p>
             ) : (
               <div className="space-y-2">
                 {reportData.villages.map((v, idx) => (
                   <div key={idx} className="flex justify-between items-center py-3 px-4 border-b border-gray-100 last:border-b-0">
                     <div>
-                      <span className="text-xl font-semibold text-gray-800">{v.village}</span>
-                      <span className="text-base text-gray-500 mr-3">({v.paidCount} مدفوع | {v.unpaidCount} غير مدفوع)</span>
+                      <span className="text-xl font-semibold text-gray-800 dark:text-gray-100">{v.village}</span>
+                      <span className="text-base text-gray-500 dark:text-gray-400 mr-3">({v.paidCount} مدفوع | {v.unpaidCount} غير مدفوع)</span>
                     </div>
                     <span className="text-xl font-bold text-green-600">{formatCurrency(v.totalCollected)}</span>
                   </div>
@@ -186,17 +186,17 @@ export default function ReportsPage() {
           </div>
 
           {/* Section 3: Late Customers */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">العملاء المتأخرون</h2>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">العملاء المتأخرون</h2>
             {lateCustomers.length === 0 ? (
-              <p className="text-lg text-gray-500 text-center py-4">لا يوجد عملاء متأخرون</p>
+              <p className="text-lg text-gray-500 dark:text-gray-400 text-center py-4">لا يوجد عملاء متأخرون</p>
             ) : (
               <div className="space-y-2">
                 {lateCustomers.map((c) => (
                   <div key={c.id} className="flex justify-between items-center py-3 px-4 border-b border-gray-100 last:border-b-0">
                     <div>
-                      <span className="text-xl font-semibold text-gray-800">{c.full_name}</span>
-                      <span className="text-base text-gray-500 mr-3">{c.village} | <span dir="ltr">{c.phone}</span></span>
+                      <span className="text-xl font-semibold text-gray-800 dark:text-gray-100">{c.full_name}</span>
+                      <span className="text-base text-gray-500 dark:text-gray-400 mr-3">{c.village} | <span dir="ltr">{c.phone}</span></span>
                     </div>
                     <span className="text-xl font-bold text-red-600">{c.lateCount} أقساط</span>
                   </div>

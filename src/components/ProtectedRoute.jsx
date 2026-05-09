@@ -7,7 +7,7 @@ export function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-2xl text-gray-600">جاري التحميل...</div>
+        <div className="text-2xl text-gray-600 dark:text-gray-400">جاري التحميل...</div>
       </div>
     );
   }

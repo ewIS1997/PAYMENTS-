@@ -13,7 +13,7 @@ import demoData from '../firebase/demoStore';
 function buildSearchIndex() {
   if (!isFirebaseConfigured) {
     return demoData.receipts.map(r => {
-      const customer = demoData.customers.find(c => c.id === r.customer_id);
+      const customer = demoData.customers.find(c => c.id === r.customer_id && !c.isDeleted);
       const contract = demoData.contracts.find(c => c.id === r.contract_id);
       return {
         receipt: r,
@@ -84,10 +84,10 @@ export default function ReceiptsPage() {
   if (loading) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">الإيصالات</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الإيصالات</h1>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 h-24 animate-pulse">
+            <div key={i} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-24 animate-pulse">
               <div className="bg-gray-200 rounded h-6 w-1/3 mb-2"></div>
               <div className="bg-gray-200 rounded h-5 w-1/2"></div>
             </div>
@@ -101,13 +101,13 @@ export default function ReceiptsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">الإيصالات</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الإيصالات</h1>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 sticky top-0 z-10">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6 sticky top-0 z-10">
         <div className="relative">
           <input
             type="text"
-            placeholder="ابحث برقم الإيصال، اسم العميل، الهاتف، القرية، المنتج..."
+            placeholder="ابحث برقم الإيصال، اسم العميل، الهاتف، المدينة، المنتج..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 pr-12 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -124,7 +124,7 @@ export default function ReceiptsPage() {
           )}
         </div>
         {searchTerm && (
-          <p className="text-base text-gray-500 mt-2">
+          <p className="text-base text-gray-500 dark:text-gray-400 mt-2">
             {totalCount} نتيجة {totalCount !== allReceipts.length && `من ${allReceipts.length}`}
           </p>
         )}
@@ -150,7 +150,7 @@ export default function ReceiptsPage() {
         {filtered.map((item) => {
           const isPreview = previewId === item.receipt.id;
           return (
-            <div key={item.receipt.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all">
+            <div key={item.receipt.id} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all">
               <div
                 className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => togglePreview(item.receipt.id)}
@@ -163,18 +163,18 @@ export default function ReceiptsPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-                      <span className="text-lg font-semibold text-gray-800">{item.customer?.full_name || '-'}</span>
+                      <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">{item.customer?.full_name || '-'}</span>
                       {item.customer?.village && (
-                        <span className="text-base text-gray-500">{item.customer.village}</span>
+                        <span className="text-base text-gray-500 dark:text-gray-400">{item.customer.village}</span>
                       )}
                       {item.contract?.product_name && (
-                        <span className="text-base text-gray-500">{item.contract.product_name}</span>
+                        <span className="text-base text-gray-500 dark:text-gray-400">{item.contract.product_name}</span>
                       )}
                     </div>
                   </div>
                   <div className="text-left flex flex-col items-end gap-1">
                     <p className="text-xl font-bold text-green-600">{formatCurrency(item.receipt.amount)}</p>
-                    <p className="text-base text-gray-500">{formatArabicMonth(item.receipt.month, item.receipt.year)}</p>
+                    <p className="text-base text-gray-500 dark:text-gray-400">{formatArabicMonth(item.receipt.month, item.receipt.year)}</p>
                     <svg
                       className={`w-5 h-5 text-gray-400 transition-transform ${isPreview ? 'rotate-180' : ''}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -208,7 +208,7 @@ export default function ReceiptsPage() {
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); setPreviewId(null); }}
-                      className="px-6 py-3 border border-gray-300 text-gray-700 text-lg rounded-lg hover:bg-gray-50 transition-colors min-h-[44px]"
+                      className="px-6 py-3 border border-gray-300 text-gray-700 dark:text-gray-300 text-lg rounded-lg hover:bg-gray-50 transition-colors min-h-[44px]"
                     >
                       إغلاق
                     </button>

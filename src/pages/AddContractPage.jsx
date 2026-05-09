@@ -120,6 +120,16 @@ export default function AddContractPage() {
     if (!formData.monthly_amount || parseFloat(formData.monthly_amount) <= 0) newErrors.monthly_amount = 'القسط الشهري مطلوب ويجب أن يكون أكبر من صفر';
     if (!formData.months_count || parseInt(formData.months_count) <= 0) newErrors.months_count = 'عدد الأشهر مطلوب ويجب أن يكون أكبر من صفر';
     if (!formData.start_date) newErrors.start_date = 'تاريخ البداية مطلوب';
+    
+    const total = parseFloat(formData.total_amount);
+    const monthly = parseFloat(formData.monthly_amount);
+    const months = parseInt(formData.months_count);
+    if (total && monthly && months) {
+      const expected = monthly * months;
+      if (Math.abs(expected - total) > total * 0.1) {
+        newErrors.monthly_amount = `المبلغ لا يتوافق مع (${months} شهر × ${monthly}) = ${expected}`;
+      }
+    }
     return newErrors;
   };
 
@@ -148,7 +158,7 @@ export default function AddContractPage() {
       <AppShell>
         <div className="animate-pulse space-y-5">
           <div className="bg-gray-200 rounded h-8 w-48"></div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="bg-gray-200 rounded h-14"></div>
             ))}
@@ -167,8 +177,8 @@ export default function AddContractPage() {
         → رجوع
       </button>
 
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">إضافة عقد جديد</h1>
-      <p className="text-xl text-gray-500 mb-6">للعميل: {customer?.full_name}</p>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">إضافة عقد جديد</h1>
+      <p className="text-xl text-gray-500 dark:text-gray-400 mb-6">للعميل: {customer?.full_name}</p>
 
       {errors.general && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-lg mb-4">
@@ -176,11 +186,11 @@ export default function AddContractPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
         {/* Product Picker */}
         <div ref={productPickerRef} className="relative">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-lg font-medium text-gray-700">
+            <label className="text-lg font-medium text-gray-700 dark:text-gray-300">
               اسم المنتج <span className="text-red-500">*</span>
             </label>
             {products.length > 0 && (
@@ -227,7 +237,7 @@ export default function AddContractPage() {
                       type="button"
                       onClick={() => setSelectedCategory('')}
                       className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
-                        selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
+                        selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-gray-400'
                       }`}
                     >
                       الكل
@@ -238,7 +248,7 @@ export default function AddContractPage() {
                         type="button"
                         onClick={() => setSelectedCategory(cat === selectedCategory ? '' : cat)}
                         className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
-                          selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
+                          selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         {cat}
@@ -259,7 +269,7 @@ export default function AddContractPage() {
                       className="w-full px-4 py-2.5 text-right hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-gray-50 last:border-b-0"
                     >
                       <div>
-                        <span className="text-sm font-semibold text-gray-800">{product.name}</span>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{product.name}</span>
                         {product.category && (
                           <span className="text-xs text-gray-400 mr-2">({product.category})</span>
                         )}
@@ -274,7 +284,7 @@ export default function AddContractPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             الإجمالي (جنيه) <span className="text-red-500">*</span>
           </label>
           <input
@@ -293,7 +303,7 @@ export default function AddContractPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             القسط الشهري (جنيه) <span className="text-red-500">*</span>
           </label>
           <input
@@ -312,7 +322,7 @@ export default function AddContractPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             عدد الأشهر <span className="text-red-500">*</span>
           </label>
           <input
@@ -331,7 +341,7 @@ export default function AddContractPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             تاريخ البداية <span className="text-red-500">*</span>
           </label>
           <input
@@ -350,9 +360,9 @@ export default function AddContractPage() {
 
         {(formData.start_date || formData.monthly_amount || formData.total_amount || formData.months_count) && (
           <div className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-700">ملخص العقد</h3>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">ملخص العقد</h3>
             {calculatedEndDate && (
-              <p className="text-base text-gray-600">
+              <p className="text-base text-gray-600 dark:text-gray-400">
                 تاريخ النهاية:{' '}
                 <span className="font-medium">
                   {getArabicMonthName(calculatedEndDate.getMonth())} {calculatedEndDate.getFullYear()}
@@ -360,7 +370,7 @@ export default function AddContractPage() {
               </p>
             )}
             {formData.months_count && (
-              <p className="text-base text-gray-600">
+              <p className="text-base text-gray-600 dark:text-gray-400">
                 سيتم إنشاء <span className="font-medium">{formData.months_count}</span> قسط
               </p>
             )}

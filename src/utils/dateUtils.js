@@ -15,9 +15,12 @@ export function getArabicMonthName(monthNumber) {
 }
 
 export function formatDateForDisplay(date) {
-  const day = date.getDate();
-  const month = getArabicMonthName(date.getMonth());
-  const year = date.getFullYear();
+  if (!date) return '-';
+  const d = date instanceof Date ? date : date.toDate?.() || date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '-';
+  const day = d.getDate();
+  const month = getArabicMonthName(d.getMonth());
+  const year = d.getFullYear();
   return `${day} ${month} ${year}`;
 }
 

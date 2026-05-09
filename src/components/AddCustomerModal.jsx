@@ -86,7 +86,7 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
     } else if (!/^01[0-9]{9}$/.test(formData.phone.trim())) {
       newErrors.phone = 'يجب أن يبدأ بـ 01 ويتكون من 11 رقم';
     }
-    if (!formData.village.trim()) newErrors.village = 'القرية مطلوبة';
+    if (!formData.village.trim()) newErrors.village = 'المدينة مطلوبة';
     if (formData.national_id.trim() && !/^\d{14}$/.test(formData.national_id.trim())) {
       newErrors.national_id = 'يجب أن يتكون من 14 رقم';
     }
@@ -123,26 +123,26 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
 
   if (!isOpen) return null;
 
-  const inputBase = 'w-full px-3 py-2.5 text-base font-semibold border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-colors bg-gray-50 focus:bg-white';
-  const inputError = 'border-red-400 bg-red-50 focus:bg-white';
-  const inputNormal = 'border-gray-200 hover:border-gray-300';
-  const labelClass = 'block text-sm font-bold text-gray-700 mb-1';
+  const inputBase = 'w-full px-3 py-2.5 text-base font-semibold border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-colors bg-gray-50 dark:bg-gray-700 dark:text-white focus:bg-white dark:focus:bg-gray-600';
+  const inputError = 'border-red-400 bg-red-50 dark:bg-red-900/30 focus:bg-white dark:focus:bg-gray-600';
+  const inputNormal = 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500';
+  const labelClass = 'block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
 
       <div
         ref={wrapperRef}
-        className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl z-10 flex flex-col"
+        className="relative bg-gray-50 dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl z-10 flex flex-col"
         style={{ maxHeight: 'min(85vh, 580px)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">إضافة عميل جديد</h2>
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">إضافة عميل جديد</h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
           >
             <IconX className="w-5 h-5" />
           </button>
@@ -151,13 +151,13 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-5 py-4 space-y-3.5">
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-xl text-sm font-bold">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-xl text-sm font-bold">
               {errors.general}
             </div>
           )}
 
           {phoneWarning && !errors.phone && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-xl text-sm font-bold">
+            <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300 px-3 py-2 rounded-xl text-sm font-bold">
               {phoneWarning}
             </div>
           )}
@@ -193,7 +193,7 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
 
           {/* Village */}
           <div>
-            <label className={labelClass}>القرية <span className="text-red-500">*</span></label>
+            <label className={labelClass}>المدينة <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={formData.village}
@@ -283,7 +283,7 @@ export default function AddCustomerModal({ isOpen, onClose, villages, existingPh
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-base font-bold border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors min-h-[44px]"
+            className="px-5 py-2.5 text-base font-bold border-2 border-gray-200 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors min-h-[44px]"
           >
             إلغاء
           </button>

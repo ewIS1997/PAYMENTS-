@@ -47,7 +47,11 @@ export async function updateSettings(data) {
 
 export async function uploadLogo(file) {
   if (!isFirebaseConfigured) {
-    return URL.createObjectURL(file);
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
   }
   const storageRef = ref(storage, `logos/${Date.now()}_${file.name}`);
   const snapshot = await uploadBytes(storageRef, file);

@@ -89,8 +89,15 @@ export default function EditCustomerPage() {
   const validate = () => {
     const newErrors = {};
     if (!formData.full_name.trim()) newErrors.full_name = 'الاسم مطلوب';
-    if (!formData.phone.trim()) newErrors.phone = 'رقم الهاتف مطلوب';
-    if (!formData.village.trim()) newErrors.village = 'القرية مطلوبة';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'رقم الهاتف مطلوب';
+    } else if (!/^01[0-9]{9}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'يجب أن يبدأ بـ 01 ويتكون من 11 رقم';
+    }
+    if (!formData.village.trim()) newErrors.village = 'المدينة مطلوبة';
+    if (formData.national_id.trim() && !/^\d{14}$/.test(formData.national_id.trim())) {
+      newErrors.national_id = 'يجب أن يتكون من 14 رقم';
+    }
     return newErrors;
   };
 
@@ -138,7 +145,7 @@ export default function EditCustomerPage() {
       <AppShell>
         <div className="animate-pulse space-y-5">
           <div className="bg-gray-200 rounded h-8 w-48"></div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-gray-200 rounded h-14"></div>
             ))}
@@ -157,7 +164,7 @@ export default function EditCustomerPage() {
         → رجوع
       </button>
 
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">تعديل بيانات العميل</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">تعديل بيانات العميل</h1>
 
       {errors.general && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-lg mb-4">
@@ -165,9 +172,9 @@ export default function EditCustomerPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             الاسم الكامل <span className="text-red-500">*</span>
           </label>
           <input
@@ -184,7 +191,7 @@ export default function EditCustomerPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             رقم الهاتف <span className="text-red-500">*</span>
           </label>
           <input
@@ -195,6 +202,7 @@ export default function EditCustomerPage() {
               errors.phone ? 'border-red-500' : 'border-gray-300'
             }`}
             dir="ltr"
+            maxLength={11}
           />
           {errors.phone && (
             <p className="text-red-500 text-base mt-1">{errors.phone}</p>
@@ -202,8 +210,8 @@ export default function EditCustomerPage() {
         </div>
 
         <div ref={wrapperRef}>
-          <label className="block text-lg font-medium text-gray-700 mb-2">
-            القرية <span className="text-red-500">*</span>
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+            المدينة <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -237,18 +245,24 @@ export default function EditCustomerPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">الرقم القومي</label>
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">الرقم القومي</label>
           <input
             type="text"
             value={formData.national_id}
             onChange={(e) => handleChange('national_id', e.target.value)}
-            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+              errors.national_id ? 'border-red-500' : 'border-gray-300'
+            }`}
             dir="ltr"
+            maxLength={14}
           />
+          {errors.national_id && (
+            <p className="text-red-500 text-base mt-1">{errors.national_id}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">العنوان</label>
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">العنوان</label>
           <input
             type="text"
             value={formData.address}
@@ -258,7 +272,7 @@ export default function EditCustomerPage() {
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-gray-700 mb-2">ملاحظات</label>
+          <label className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">ملاحظات</label>
           <textarea
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
@@ -278,7 +292,7 @@ export default function EditCustomerPage() {
         <div className="border-t border-gray-200 pt-6 mt-6">
           {hasContracts ? (
             <div className="text-center">
-              <p className="text-lg text-gray-500 mb-2">لا يمكن حذف هذا العميل لأنه لديه عقود</p>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mb-2">لا يمكن حذف هذا العميل لأنه لديه عقود</p>
             </div>
           ) : (
             <button

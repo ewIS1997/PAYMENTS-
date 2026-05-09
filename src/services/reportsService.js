@@ -17,10 +17,13 @@ export async function fetchMonthlyReport(month, year) {
       return d && d.getMonth() === month && d.getFullYear() === year;
     });
     const paid = relevant.filter(i => i.status === 'paid');
-    const unpaid = relevant.filter(i => i.status !== 'paid');
+    const partial = relevant.filter(i => i.status === 'partial');
+    const unpaid = relevant.filter(i => i.status === 'pending' || i.status === 'late');
+    const collectedFromPaid = paid.reduce((s, i) => s + (i.amount || 0), 0);
+    const collectedFromPartial = partial.reduce((s, i) => s + (i.paid_amount || 0), 0);
     return {
-      totalCollected: paid.reduce((s, i) => s + (i.amount || 0), 0),
-      paidCount: paid.length,
+      totalCollected: collectedFromPaid + collectedFromPartial,
+      paidCount: paid.length + partial.length,
       unpaidCount: unpaid.length,
     };
   }
@@ -47,7 +50,7 @@ export async function fetchVillageBreakdown(month, year) {
     });
     const villageMap = {};
     relevant.forEach(inst => {
-      const customer = demoData.customers.find(c => c.id === inst.customer_id);
+      const customer = demoData.customers.find(c => c.id === inst.customer_id && !c.isDeleted);
       const village = customer?.village || 'غير محدد';
       if (!villageMap[village]) villageMap[village] = { village, paidCount: 0, unpaidCount: 0, totalCollected: 0 };
       if (inst.status === 'paid') {
@@ -131,10 +134,14 @@ export async function fetchLateCustomers() {
 export async function fetchGrandTotals() {
   if (!isFirebaseConfigured) {
     const paid = demoData.installments.filter(i => i.status === 'paid');
-    const unpaid = demoData.installments.filter(i => i.status !== 'paid');
+    const partial = demoData.installments.filter(i => i.status === 'partial');
+    const unpaid = demoData.installments.filter(i => i.status === 'pending' || i.status === 'late');
+    const collectedFromPaid = paid.reduce((s, i) => s + (i.amount || 0), 0);
+    const collectedFromPartial = partial.reduce((s, i) => s + (i.paid_amount || 0), 0);
+    const remainingFromPartial = partial.reduce((s, i) => s + ((i.amount || 0) - (i.paid_amount || 0)), 0);
     return {
-      totalCollected: paid.reduce((s, i) => s + (i.amount || 0), 0),
-      totalOutstanding: unpaid.reduce((s, i) => s + (i.amount || 0), 0),
+      totalCollected: collectedFromPaid + collectedFromPartial,
+      totalOutstanding: unpaid.reduce((s, i) => s + (i.amount || 0), 0) + remainingFromPartial,
     };
   }
 

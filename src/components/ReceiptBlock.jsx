@@ -29,29 +29,29 @@ export default function ReceiptBlock({ receipt, customer, contract, shopName, sh
 
       <div className="space-y-0.5" style={{ fontSize: '9pt' }}>
         <div className="flex justify-between">
-          <span className="text-gray-500">اسم العميل:</span>
+          <span className="text-gray-500 dark:text-gray-400">اسم العميل:</span>
           <span className="font-semibold">{customer?.full_name || '-'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">رقم الهاتف:</span>
+          <span className="text-gray-500 dark:text-gray-400">رقم الهاتف:</span>
           <span className="font-semibold" dir="ltr">{customer?.phone || '-'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">القرية:</span>
+          <span className="text-gray-500 dark:text-gray-400">المدينة:</span>
           <span className="font-semibold">{customer?.village || '-'}</span>
         </div>
         {customer?.address && (
           <div className="flex justify-between">
-            <span className="text-gray-500">العنوان:</span>
+            <span className="text-gray-500 dark:text-gray-400">العنوان:</span>
             <span className="font-semibold">{customer.address}</span>
           </div>
         )}
         <div className="flex justify-between">
-          <span className="text-gray-500">المنتج:</span>
+          <span className="text-gray-500 dark:text-gray-400">المنتج:</span>
           <span className="font-semibold">{contract?.product_name || '-'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">الشهر:</span>
+          <span className="text-gray-500 dark:text-gray-400">الشهر:</span>
           <span className="font-semibold">{monthYear}</span>
         </div>
       </div>

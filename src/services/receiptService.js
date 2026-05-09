@@ -54,7 +54,7 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
         issue_date: today,
         month: dueDate ? dueDate.getMonth() : today.getMonth(),
         year: dueDate ? dueDate.getFullYear() : today.getFullYear(),
-        amount: inst.amount,
+        amount: inst.paid_amount || inst.amount,
         customer: { full_name: customer.full_name || '', phone: customer.phone || '', village: customer.village || '', address: customer.address || '' },
         contract: { product_name: contract.product_name || '' },
       };

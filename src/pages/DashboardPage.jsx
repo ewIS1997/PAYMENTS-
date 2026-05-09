@@ -23,14 +23,26 @@ export default function DashboardPage() {
     async function fetchStats() {
       if (!isFirebaseConfigured) {
         setAllCustomers(demoData.customers.filter(c => !c.isDeleted));
+        const now = new Date();
         const unpaid = demoData.installments.filter(i => {
-          const now = new Date();
-          return i.status === 'pending' && i.due_date?.getMonth() === now.getMonth() && i.due_date?.getFullYear() === now.getFullYear();
+          return (i.status === 'pending' || i.status === 'late') && i.due_date?.getMonth() === now.getMonth() && i.due_date?.getFullYear() === now.getFullYear();
         });
-        const lateCustomerIds = new Set(demoData.installments.filter(i => i.status === 'late').map(i => i.customer_id));
+        const partial = demoData.installments.filter(i => {
+          return i.status === 'partial' && i.due_date?.getMonth() === now.getMonth() && i.due_date?.getFullYear() === now.getFullYear();
+        });
+        const paid = demoData.installments.filter(i => i.status === 'paid');
+        const activeCustomerIds = new Set(demoData.customers.filter(c => !c.isDeleted).map(c => c.id));
+        const lateCustomerIds = new Set(
+          demoData.installments
+            .filter(i => i.status === 'late' && activeCustomerIds.has(i.customer_id))
+            .map(i => i.customer_id)
+        );
+        const unpaidAmount = unpaid.reduce((s, i) => s + (i.amount || 0), 0);
+        const partialRemaining = partial.reduce((s, i) => s + ((i.amount || 0) - (i.paid_amount || 0)), 0);
+        const paidAmount = paid.reduce((s, i) => s + (i.amount || 0), 0);
         setStats({
-          unpaidThisMonth: unpaid.length,
-          collectedThisMonth: demoData.installments.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amount || 0), 0),
+          unpaidThisMonth: unpaidAmount + partialRemaining,
+          collectedThisMonth: paidAmount + partial.reduce((s, i) => s + (i.paid_amount || 0), 0),
           lateCustomers: lateCustomerIds.size,
         });
         setLoading(false);
@@ -81,10 +93,10 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">الرئيسية</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الرئيسية</h1>
 
       {/* Quick Search */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <input
           type="text"
           value={searchTerm}
@@ -104,15 +116,15 @@ export default function DashboardPage() {
                 }}
                 className="w-full text-right px-4 py-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-100 transition-colors"
               >
-                <span className="text-lg font-semibold text-gray-800">{c.full_name}</span>
-                <span className="text-base text-gray-500 mr-3" dir="ltr">{c.phone}</span>
-                <span className="text-base text-gray-500 mr-2">- {c.village}</span>
+                <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">{c.full_name}</span>
+                <span className="text-base text-gray-500 dark:text-gray-400 mr-3" dir="ltr">{c.phone}</span>
+                <span className="text-base text-gray-500 dark:text-gray-400 mr-2">- {c.village}</span>
               </button>
             ))}
           </div>
         )}
         {searchTerm.trim() && searchResults.length === 0 && (
-          <p className="text-lg text-gray-500 text-center py-3">لم يتم العثور على نتائج</p>
+          <p className="text-lg text-gray-500 dark:text-gray-400 text-center py-3">لم يتم العثور على نتائج</p>
         )}
       </div>
 

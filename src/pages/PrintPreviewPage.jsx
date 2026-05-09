@@ -6,12 +6,14 @@ import ReceiptBlock from '../components/ReceiptBlock';
 import { getSettings } from '../services/settingsService';
 import { getReceiptData } from '../services/receiptService';
 
+const PRINT_RECEIPTS_KEY = 'print_receipts';
+
 export default function PrintPreviewPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const receipts = location.state?.receipts;
-  const hasReceipts = Boolean(receipts && receipts.length > 0);
-  const receiptsRef = useRef(receipts);
+  const locationReceipts = location.state?.receipts;
+  const hasReceipts = Boolean(locationReceipts && locationReceipts.length > 0);
+  const receiptsRef = useRef(locationReceipts || JSON.parse(sessionStorage.getItem(PRINT_RECEIPTS_KEY) || 'null'));
   const [settings, setSettings] = useState(null);
   const [fullData, setFullData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,8 @@ export default function PrintPreviewPage() {
           setLoading(false);
           return;
         }
+
+        sessionStorage.setItem(PRINT_RECEIPTS_KEY, JSON.stringify(receiptsRef.current));
 
         const dataPromises = receiptsRef.current.map(async (receipt) => {
           if (receipt.customer && receipt.contract) {

@@ -66,7 +66,9 @@ export async function getCustomer(customerId) {
   const customerRef = doc(db, CUSTOMERS_COLLECTION, customerId);
   const snapshot = await getDoc(customerRef);
   if (!snapshot.exists()) return null;
-  return { id: snapshot.id, ...snapshot.data() };
+  const data = snapshot.data();
+  if (data.isDeleted) return null;
+  return { id: snapshot.id, ...data };
 }
 
 export async function getAllCustomers() {
@@ -101,4 +103,32 @@ export async function getUniqueVillages() {
     if (village) villages.add(village);
   });
   return Array.from(villages).sort();
+}
+
+export async function findPotentialDuplicates(phoneNumber) {
+  if (!isFirebaseConfigured) {
+    const similarPhone = phoneNumber.slice(-7);
+    return demoData.customers.filter(c => {
+      if (c.isDeleted) return false;
+      if (!c.phone) return false;
+      return c.phone.slice(-7) === similarPhone;
+    });
+  }
+  
+  const q = query(
+    collection(db, CUSTOMERS_COLLECTION),
+    where('isDeleted', '==', false)
+  );
+  const snapshot = await getDocs(q);
+  const similarPhone = phoneNumber.slice(-7);
+  const results = [];
+  
+  snapshot.docs.forEach(doc => {
+    const data = doc.data();
+    if (data.phone && data.phone.slice(-7) === similarPhone) {
+      results.push({ id: doc.id, ...data });
+    }
+  });
+  
+  return results;
 }

@@ -122,9 +122,9 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">الإعدادات</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الإعدادات</h1>
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="h-7 bg-gray-200 rounded w-48 mb-4 animate-pulse"></div>
             <div className="space-y-4">
               <div className="h-12 bg-gray-100 rounded animate-pulse"></div>
@@ -132,7 +132,7 @@ export default function SettingsPage() {
               <div className="h-12 bg-gray-100 rounded animate-pulse"></div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="h-7 bg-gray-200 rounded w-48 mb-4 animate-pulse"></div>
             <div className="space-y-4">
               <div className="h-12 bg-gray-100 rounded animate-pulse"></div>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">الإعدادات</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الإعدادات</h1>
 
       {error && (
         <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-lg mb-4 flex items-center justify-between">
@@ -158,12 +158,12 @@ export default function SettingsPage() {
       )}
 
       {/* Section 1: Shop Identity */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">هوية المتجر</h2>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">هوية المتجر</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-1">اسم المتجر</label>
+            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">اسم المتجر</label>
             <input
               type="text"
               value={shopName}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-1">شعار المتجر</label>
+            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">شعار المتجر</label>
             <input
               type="file"
               accept="image/*"
@@ -188,7 +188,7 @@ export default function SettingsPage() {
 
           {logoPreview && (
             <div className="mt-2">
-              <p className="text-base text-gray-600 mb-2">معاينة الشعار:</p>
+              <p className="text-base text-gray-600 dark:text-gray-400 mb-2">معاينة الشعار:</p>
               <img src={logoPreview} alt="شعار المتجر" className="max-h-[120px] rounded-lg border border-gray-200" />
             </div>
           )}
@@ -203,7 +203,7 @@ export default function SettingsPage() {
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
-            <span className="text-lg font-medium text-gray-700">إظهار الشعار في الإيصالات</span>
+            <span className="text-lg font-medium text-gray-700 dark:text-gray-300">إظهار الشعار في الإيصالات</span>
           </div>
 
           <button
@@ -217,9 +217,9 @@ export default function SettingsPage() {
       </div>
 
       {/* Section 2: Product Database */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">قاعدة بيانات المنتجات</h2>
-        <p className="text-base text-gray-500 mb-4">إدارة المنتجات المتاحة للاختيار السريع عند إنشاء العقود</p>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">قاعدة بيانات المنتجات</h2>
+        <p className="text-base text-gray-500 dark:text-gray-400 mb-4">إدارة المنتجات المتاحة للاختيار السريع عند إنشاء العقود</p>
         <button
           onClick={() => navigate('/products')}
           className="w-full bg-gray-800 hover:bg-gray-900 text-white text-xl font-semibold py-3 rounded-lg transition-colors min-h-[44px] flex items-center justify-center gap-2"
@@ -230,25 +230,25 @@ export default function SettingsPage() {
       </div>
 
       {/* Section 3: Receipt Configuration */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">إعدادات الإيصالات</h2>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">إعدادات الإيصالات</h2>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-base text-gray-600 mb-1">بادئة الإيصال</label>
+              <label className="block text-base text-gray-600 dark:text-gray-400 mb-1">بادئة الإيصال</label>
               <div className="px-4 py-3 text-xl font-semibold bg-gray-50 border border-gray-200 rounded-lg">
                 {settings?.receipt_prefix || 'RCPT'}
               </div>
             </div>
             <div>
-              <label className="block text-base text-gray-600 mb-1">آخر رقم إيصال</label>
+              <label className="block text-base text-gray-600 dark:text-gray-400 mb-1">آخر رقم إيصال</label>
               <div className="px-4 py-3 text-xl font-semibold bg-gray-50 border border-gray-200 rounded-lg" dir="ltr">
                 {settings?.last_receipt_number || 0}
               </div>
             </div>
             <div>
-              <label className="block text-base text-gray-600 mb-1">السنة</label>
+              <label className="block text-base text-gray-600 dark:text-gray-400 mb-1">السنة</label>
               <div className="px-4 py-3 text-xl font-semibold bg-gray-50 border border-gray-200 rounded-lg" dir="ltr">
                 {settings?.receipt_year || new Date().getFullYear()}
               </div>

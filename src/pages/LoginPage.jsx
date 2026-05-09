@@ -53,15 +53,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">نظام إدارة الأقساط</h1>
-          <p className="text-gray-500 text-lg">قم بتسجيل الدخول للمتابعة</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">نظام إدارة الأقساط</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">قم بتسجيل الدخول للمتابعة</p>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <p className="text-amber-800 text-base text-center flex items-center justify-center gap-2">
+        <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg p-4 mb-6">
+          <p className="text-amber-800 dark:text-amber-300 text-base text-center flex items-center justify-center gap-2">
             <IconWarning className="w-5 h-5 shrink-0" />
             وضع تجريبي — بيانات مخزنة محلياً
           </p>
@@ -69,7 +69,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
+            <label htmlFor="username" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               اسم المستخدم
             </label>
             <input
@@ -79,7 +79,7 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               onKeyDown={handleKeyDown}
               onKeyUp={handleKeyUp}
-              className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-gray-100 disabled:opacity-60"
+              className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:opacity-60"
               placeholder="amr, ahmed, ewis ..."
               required
               dir="ltr"
@@ -90,7 +90,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-lg font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
               كلمة المرور
             </label>
             <div className="relative">
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onKeyUp={handleKeyUp}
-                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-gray-100 disabled:opacity-60 ltr"
+                className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:opacity-60 ltr"
                 placeholder="••••••••"
                 required
                 dir="ltr"
@@ -112,7 +112,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1"
                 tabIndex={-1}
                 aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
               >

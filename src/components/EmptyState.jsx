@@ -15,10 +15,10 @@ export default function EmptyState({ icon = '📋', message, actionLabel, onActi
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="mb-4 text-gray-300">
+      <div className="mb-4 text-gray-300 dark:text-gray-600">
         <IconComponent className="w-16 h-16" />
       </div>
-      <p className="text-xl text-gray-500 text-center mb-4">{message}</p>
+      <p className="text-xl text-gray-500 dark:text-gray-400 text-center mb-4">{message}</p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}

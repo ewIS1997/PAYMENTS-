@@ -142,6 +142,8 @@ function generateDemoData() {
   const customers = [];
   const contracts = [];
   const installments = [];
+  const receipts = [];
+  let receiptCounter = 0;
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -239,6 +241,29 @@ function generateDemoData() {
 
         if (status === 'paid') {
           inst.payment_date = new Date(dueDate.getTime() + randInt(0, 15) * 86400000);
+          if (rng() > 0.7 && monthsFromNow < -3) {
+            const receiptId = `receipt-${inst.id}`;
+            receipts.push({
+              id: receiptId,
+              receipt_number: `RCPT-${currentYear}-${String(receiptCounter + 1).padStart(4, '0')}`,
+              installment_id: inst.id,
+              customer_id: customer.id,
+              customer_name: fullName,
+              contract_id: contractId,
+              issue_date: inst.payment_date,
+              month: dueDate.getMonth(),
+              year: dueDate.getFullYear(),
+              amount: amount,
+            });
+            inst.receipt_id = receiptId;
+            receiptCounter += 1;
+          }
+        }
+
+        if (status === 'paid' && rng() > 0.85 && monthsFromNow < -1) {
+          const partialAmount = Math.floor(amount * (0.4 + rng() * 0.5));
+          inst.paid_amount = partialAmount;
+          inst.payment_date = new Date(dueDate.getTime() + randInt(0, 10) * 86400000);
         }
 
         installments.push(inst);
@@ -246,7 +271,7 @@ function generateDemoData() {
     }
   }
 
-  return { customers, contracts, installments };
+  return { customers, contracts, installments, receipts };
 }
 
 const generated = generateDemoData();

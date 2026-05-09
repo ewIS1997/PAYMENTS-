@@ -42,7 +42,7 @@ export default function ContractDetailPage() {
       <AppShell>
         <div className="animate-pulse space-y-4">
           <div className="bg-gray-200 rounded h-8 w-48"></div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-3">
             <div className="bg-gray-200 rounded h-6 w-1/2"></div>
             <div className="bg-gray-200 rounded h-5 w-1/3"></div>
           </div>
@@ -78,27 +78,27 @@ export default function ContractDetailPage() {
         → رجوع
       </button>
 
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">{contract.product_name}</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{contract.product_name}</h1>
       <div className="flex items-center gap-3 mb-6">
         <StatusBadge status={contract.status} />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
-            <p className="text-base text-gray-500">الإجمالي</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">الإجمالي</p>
             <p className="text-xl font-bold">{formatCurrency(contract.total_amount)}</p>
           </div>
           <div>
-            <p className="text-base text-gray-500">القسط الشهري</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">القسط الشهري</p>
             <p className="text-xl font-bold">{formatCurrency(contract.monthly_amount)}</p>
           </div>
           <div>
-            <p className="text-base text-gray-500">عدد الأشهر</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">عدد الأشهر</p>
             <p className="text-xl font-bold">{contract.months_count}</p>
           </div>
           <div>
-            <p className="text-base text-gray-500">تاريخ البداية</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">تاريخ البداية</p>
             <p className="text-xl font-medium">
               {contract.start_date
                 ? formatArabicMonth(
@@ -109,7 +109,7 @@ export default function ContractDetailPage() {
             </p>
           </div>
           <div>
-            <p className="text-base text-gray-500">تاريخ النهاية</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">تاريخ النهاية</p>
             <p className="text-xl font-medium">
               {contract.end_date
                 ? formatArabicMonth(
@@ -122,7 +122,7 @@ export default function ContractDetailPage() {
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">الأقساط</h2>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">الأقساط</h2>
 
       {error ? (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-lg">
@@ -148,7 +148,7 @@ export default function ContractDetailPage() {
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="text-xl font-bold text-gray-800">
+                  <p className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     {inst.due_date
                       ? formatArabicMonth(
                           (toDateValue(inst.due_date))?.getMonth() ?? 0,
@@ -156,7 +156,10 @@ export default function ContractDetailPage() {
                         )
                       : '-'}
                   </p>
-                  <p className="text-lg text-gray-500">{formatCurrency(inst.amount)}</p>
+                  <p className={`text-lg ${inst.carryover_from_partial ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {formatCurrency(inst.amount)}
+                    {inst.carryover_from_partial && <span className="text-xs block text-blue-500">+{formatCurrency(inst.carryover_from_partial)} من قسط سابق</span>}
+                  </p>
                 </div>
                 <div className="text-left">
                   <StatusBadge status={inst.status} />

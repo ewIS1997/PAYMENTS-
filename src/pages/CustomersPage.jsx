@@ -59,12 +59,12 @@ export default function CustomersPage() {
   if (loading) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">العملاء</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">العملاء</h1>
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 h-24 animate-pulse">
-              <div className="bg-gray-200 rounded h-6 w-3/4 mb-2"></div>
-              <div className="bg-gray-200 rounded h-5 w-1/2"></div>
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-24 animate-pulse">
+              <div className="bg-gray-200 dark:bg-gray-700 rounded h-6 w-3/4 mb-2"></div>
+              <div className="bg-gray-200 dark:bg-gray-700 rounded h-5 w-1/2"></div>
             </div>
           ))}
         </div>
@@ -75,8 +75,8 @@ export default function CustomersPage() {
   if (error) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">العملاء</h1>
-        <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-lg mb-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">العملاء</h1>
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-lg mb-4 flex items-center justify-between">
           <span>{error}</span>
           <button onClick={refresh} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-base font-semibold min-h-[44px]">
             إعادة المحاولة
@@ -89,7 +89,7 @@ export default function CustomersPage() {
   if (customers.length === 0) {
     return (
       <AppShell>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">العملاء</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">العملاء</h1>
         <EmptyState
           icon="👥"
           message="لا يوجد عملاء بعد"
@@ -102,22 +102,22 @@ export default function CustomersPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">العملاء</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">العملاء</h1>
 
       <div className="space-y-4 mb-6">
         <div className="relative">
-          <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+          <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
           <input
             type="text"
-            placeholder="ابحث بالاسم، الهاتف، القرية، العنوان، الرقم القومي..."
+            placeholder="ابحث بالاسم، الهاتف، المدينة، العنوان، الرقم القومي..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-3 pr-10 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-3 pr-10 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <IconX className="w-4 h-4" />
             </button>
@@ -131,7 +131,7 @@ export default function CustomersPage() {
               className={`px-4 py-2 rounded-full text-base whitespace-nowrap transition-colors min-h-[40px] ${
                 !selectedVillage
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               الكل
@@ -143,7 +143,7 @@ export default function CustomersPage() {
                 className={`px-4 py-2 rounded-full text-base whitespace-nowrap transition-colors min-h-[40px] ${
                   selectedVillage === village
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
                 {village}
@@ -154,12 +154,12 @@ export default function CustomersPage() {
 
         {activeFiltersCount > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-base text-gray-500">
+            <span className="text-base text-gray-500 dark:text-gray-400">
               {filteredCustomers.length} نتيجة {filteredCustomers.length !== customers.length && `من ${customers.length}`}
             </span>
             <button
               onClick={clearAll}
-              className="text-base text-blue-600 hover:underline"
+              className="text-base text-blue-600 dark:text-blue-400 hover:underline"
             >
               مسح الفلاتر
             </button>

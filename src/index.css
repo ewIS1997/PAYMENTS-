@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-noto: 'Noto Naskh Arabic', serif;
 }
@@ -11,6 +13,43 @@
 body {
   font-size: 16px;
   direction: rtl;
+}
+
+/* Soft color scheme - no pure white */
+.soft-card {
+  background-color: rgb(249 250 251);
+}
+
+.dark .soft-card {
+  background-color: rgb(31 41 55);
+}
+
+.soft-input {
+  background-color: rgb(249 250 251);
+}
+
+.dark .soft-input {
+  background-color: rgb(55 65 81);
+  color: rgb(255 255 255);
+}
+
+/* Override any white backgrounds with softer alternatives */
+.bg-white,
+[class*="bg-white"],
+.bg-white\/ *,
+[data-bg="white"] {
+  background-color: rgb(249 250 251) !important;
+}
+
+.dark .bg-white,
+.dark [class*="bg-white"],
+.dark [data-bg="white"] {
+  background-color: rgb(31 41 55) !important;
+}
+
+/* Override white text */
+.text-white:not(.bg-white *) {
+  color: rgb(243 244 246) !important;
 }
 
 @media print {

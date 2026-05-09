@@ -87,13 +87,13 @@ export default function AddProductModal({ isOpen, onClose, categories, editProdu
   const inputBase = 'w-full px-3 py-2.5 text-base font-semibold border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-colors bg-gray-50 focus:bg-white';
   const inputError = 'border-red-400 bg-red-50 focus:bg-white';
   const inputNormal = 'border-gray-200 hover:border-gray-300';
-  const labelClass = 'block text-sm font-bold text-gray-700 mb-1';
+  const labelClass = 'block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
       <div
-        className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl z-10 flex flex-col"
+        className="relative bg-gray-50 dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl z-10 flex flex-col"
         style={{ maxHeight: 'min(85vh, 480px)' }}
       >
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 flex-shrink-0">
@@ -102,7 +102,7 @@ export default function AddProductModal({ isOpen, onClose, categories, editProdu
           </h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 dark:text-gray-400 transition-colors"
           >
             <IconX className="w-5 h-5" />
           </button>
@@ -181,7 +181,7 @@ export default function AddProductModal({ isOpen, onClose, categories, editProdu
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-base font-bold border-2 border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors min-h-[44px]"
+            className="px-5 py-2.5 text-base font-bold border-2 border-gray-200 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors min-h-[44px]"
           >
             إلغاء
           </button>

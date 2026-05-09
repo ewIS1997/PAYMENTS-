@@ -71,11 +71,11 @@ export default function ProductsPage() {
       <AppShell>
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate('/settings')} className="text-lg text-blue-600 hover:underline">→ رجوع</button>
-          <h1 className="text-3xl font-bold text-gray-800">قاعدة بيانات المنتجات</h1>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">قاعدة بيانات المنتجات</h1>
         </div>
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
+            <div key={i} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 animate-pulse">
               <div className="h-6 bg-gray-200 rounded w-48 mb-3"></div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[...Array(3)].map((_, j) => (
@@ -93,11 +93,11 @@ export default function ProductsPage() {
     <AppShell>
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate('/settings')} className="text-lg text-blue-600 hover:underline">→ رجوع</button>
-        <h1 className="text-3xl font-bold text-gray-800">قاعدة بيانات المنتجات</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">قاعدة بيانات المنتجات</h1>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 space-y-3">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-4 space-y-3">
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <IconSearch className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -123,7 +123,7 @@ export default function ProductsPage() {
             <button
               onClick={() => setSelectedCategory('')}
               className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
               }`}
             >
               الكل ({products.length})
@@ -135,7 +135,7 @@ export default function ProductsPage() {
                   key={cat}
                   onClick={() => setSelectedCategory(cat === selectedCategory ? '' : cat)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                    selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200'
                   }`}
                 >
                   {cat} ({count})
@@ -158,7 +158,7 @@ export default function ProductsPage() {
         <div className="space-y-6">
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
-              <h2 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                 <IconCube className="w-5 h-5 text-blue-500" />
                 {category}
                 <span className="text-sm font-normal text-gray-400">({items.length})</span>
@@ -167,10 +167,10 @@ export default function ProductsPage() {
                 {items.map(product => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-xl border border-gray-200 p-4 hover:border-gray-300 transition-colors group"
+                    className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-gray-300 transition-colors group"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-base font-bold text-gray-800 leading-snug">{product.name}</h3>
+                      <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 leading-snug">{product.name}</h3>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button
                           onClick={() => { setEditProduct(product); setShowAddModal(true); }}
