@@ -117,6 +117,13 @@ export default function CustomersPage() {
           actionLabel="أضف أول عميل"
           onAction={() => setShowAddModal(true)}
         />
+        <AddCustomerModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          villages={villages}
+          existingPhones={existingPhones}
+          onCreated={handleCustomerCreated}
+        />
       </AppShell>
     );
   }
