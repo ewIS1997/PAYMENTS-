@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user has admin claim
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Default: deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Customers collection
+    match /customers/{customerId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Contracts collection
+    match /contracts/{contractId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Installments collection
+    match /installments/{installmentId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // Receipts collection
+    match /receipts/{receiptId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // Settings collection
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
+    }
+  }
+}

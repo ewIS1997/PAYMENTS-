@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  --font-noto: 'Noto Naskh Arabic', serif;
+}
+
+* {
+  font-family: var(--font-noto);
+}
+
+body {
+  font-size: 16px;
+  direction: rtl;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .print\:_hidden, [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  .print\:_static, [class*="print:static"] {
+    position: static !important;
+  }
+
+  .receipt-block {
+    page-break-inside: avoid;
+    page-break-after: auto;
+    border: 2px dashed #9ca3af !important;
+    margin-bottom: 3mm !important;
+    overflow: hidden;
+  }
+
+  .receipt-page-break {
+    page-break-after: always;
+  }
+
+  .receipt-block:last-child {
+    page-break-after: auto;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  nav, aside, header {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .safe-bottom {
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+}
+
+input, select, textarea {
+  font-size: 16px !important;
+}
