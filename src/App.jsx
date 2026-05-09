@@ -15,6 +15,7 @@ import ReceiptsPage from './pages/ReceiptsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import ProductsPage from './pages/ProductsPage';
+import AddCustomerPage from './pages/AddCustomerPage';
 
 function LoginGuard({ children }) {
   const { user, loading } = useAuth();
@@ -35,6 +36,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginGuard><LoginPage /></LoginGuard>} />
       <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/customers" element={<ProtectedRoute><CustomersPage /></ProtectedRoute>} />
+      <Route path="/customers/add" element={<ProtectedRoute><AddCustomerPage /></ProtectedRoute>} />
       <Route path="/customers/:id" element={<ProtectedRoute><CustomerDetailPage /></ProtectedRoute>} />
       <Route path="/customers/:id/edit" element={<ProtectedRoute><EditCustomerPage /></ProtectedRoute>} />
       <Route path="/customers/:id/contract/add" element={<ProtectedRoute><AddContractPage /></ProtectedRoute>} />

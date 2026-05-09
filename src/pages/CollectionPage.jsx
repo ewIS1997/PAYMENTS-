@@ -163,7 +163,7 @@ export default function CollectionPage() {
     setActionLoading(inst.id);
     try {
       await markInstallmentAsPaid(inst.id);
-      setInstallments(prev => prev.map(i => i.id === inst.id ? { ...i, status: 'paid', payment_date: new Date() } : i));
+      setInstallments(prev => prev.map(i => i.id === inst.id ? { ...i, status: 'paid', payment_date: new Date(), carryover_from_partial: null } : i));
       setJustPaidIds(prev => new Set(prev).add(inst.id));
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -220,9 +220,29 @@ export default function CollectionPage() {
         });
       } else {
         await recordPartialPayment(partialPaymentModal.id, amount);
-        setInstallments(prev => prev.map(i => i.id === partialPaymentModal.id ? { ...i, status: 'partial', paid_amount: amount, payment_date: new Date() } : i));
-        setJustPaidIds(prev => new Set(prev).add(partialPaymentModal.id));
         const remaining = partialPaymentModal.amount - amount;
+        setInstallments(prev => {
+          const updated = prev.map(i => i.id === partialPaymentModal.id ? { ...i, status: 'partial', paid_amount: amount, payment_date: new Date() } : i);
+          if (remaining > 0) {
+            const nextIdx = updated.findIndex(i => 
+              i.contract_id === partialPaymentModal.contract_id && 
+              i.id !== partialPaymentModal.id &&
+              i.due_date &&
+              i.due_date.getTime() > (partialPaymentModal.due_date?.getTime() || 0) &&
+              (i.status === 'pending' || i.status === 'late')
+            );
+            if (nextIdx >= 0) {
+              const existingCarryover = updated[nextIdx].carryover_from_partial || 0;
+              updated[nextIdx] = { 
+                ...updated[nextIdx], 
+                amount: updated[nextIdx].amount + remaining,
+                carryover_from_partial: existingCarryover + remaining,
+              };
+            }
+          }
+          return updated;
+        });
+        setJustPaidIds(prev => new Set(prev).add(partialPaymentModal.id));
         showToast(`تم دفع ${formatCurrency(amount)} — باقي ${formatCurrency(remaining)}`, {
           label: 'تراجع',
           onClick: () => handleUndoPaid(partialPaymentModal.id),

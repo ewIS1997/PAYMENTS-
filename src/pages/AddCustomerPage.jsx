@@ -146,7 +146,7 @@ export default function AddCustomerPage() {
               </div>
             ) : (
               <label className="w-24 h-24 rounded-full border-4 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
-                <span className="text-3xl text-gray-400">+</span>
+                <span className="text-3xl text-gray-400 pointer-events-none">+</span>
                 <input
                   type="file"
                   accept="image/*"

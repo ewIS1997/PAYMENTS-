@@ -56,6 +56,9 @@ export async function fetchVillageBreakdown(month, year) {
       if (inst.status === 'paid') {
         villageMap[village].paidCount += 1;
         villageMap[village].totalCollected += inst.amount || 0;
+      } else if (inst.status === 'partial') {
+        villageMap[village].paidCount += 1;
+        villageMap[village].totalCollected += inst.paid_amount || 0;
       } else {
         villageMap[village].unpaidCount += 1;
       }

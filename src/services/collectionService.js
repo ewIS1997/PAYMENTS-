@@ -64,6 +64,7 @@ export async function bulkMarkInstallmentsAsPaid(installmentIds) {
       if (idx >= 0 && demoData.installments[idx].status !== 'paid') {
         demoData.installments[idx].status = 'paid';
         demoData.installments[idx].payment_date = new Date();
+        delete demoData.installments[idx].carryover_from_partial;
         count++;
       }
     }
@@ -98,12 +99,18 @@ export async function undoMarkInstallmentAsPaid(installmentId) {
           i.contract_id === inst.contract_id && 
           i.id !== installmentId &&
           i.due_date &&
-          i.due_date.getTime() > (inst.due_date?.getTime() || 0)
+          i.due_date.getTime() > (inst.due_date?.getTime() || 0) &&
+          (i.status === 'pending' || i.status === 'late')
         );
         
         if (nextInstIdx >= 0) {
+          const existingCarryover = demoData.installments[nextInstIdx].carryover_from_partial || 0;
           demoData.installments[nextInstIdx].amount -= carryover;
-          delete demoData.installments[nextInstIdx].carryover_from_partial;
+          if (existingCarryover > carryover) {
+            demoData.installments[nextInstIdx].carryover_from_partial = existingCarryover - carryover;
+          } else {
+            delete demoData.installments[nextInstIdx].carryover_from_partial;
+          }
         }
       }
       

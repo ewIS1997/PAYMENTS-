@@ -60,6 +60,7 @@ export default function EditCustomerPage() {
           national_id: customer.national_id || '',
           address: customer.address || '',
           notes: customer.notes || '',
+          photo: customer.photo || '',
         });
         setAllVillages(villages);
         setHasContracts(contracts.length > 0);
@@ -119,6 +120,7 @@ export default function EditCustomerPage() {
         national_id: formData.national_id.trim(),
         address: formData.address.trim(),
         notes: formData.notes.trim(),
+        photo: formData.photo,
       });
       navigate(`/customers/${id}`);
     } catch (err) {
@@ -193,7 +195,7 @@ export default function EditCustomerPage() {
             </div>
           ) : (
             <label className="w-24 h-24 rounded-full border-4 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
-              <span className="text-3xl text-gray-400">+</span>
+              <span className="text-3xl text-gray-400 pointer-events-none">+</span>
               <input
                 type="file"
                 accept="image/*"
@@ -221,8 +223,8 @@ export default function EditCustomerPage() {
             type="text"
             value={formData.full_name}
             onChange={(e) => handleChange('full_name', e.target.value)}
-            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-              errors.full_name ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-700 dark:text-white ${
+              errors.full_name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
           />
           {errors.full_name && (
@@ -238,8 +240,8 @@ export default function EditCustomerPage() {
             type="tel"
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-              errors.phone ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-700 dark:text-white ${
+              errors.phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             dir="ltr"
             maxLength={11}
@@ -261,18 +263,18 @@ export default function EditCustomerPage() {
               setShowSuggestions(true);
             }}
             onFocus={() => setShowSuggestions(true)}
-            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-              errors.village ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-700 dark:text-white ${
+              errors.village ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
           />
           {showSuggestions && filteredVillages.length > 0 && (
-            <div className="mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {filteredVillages.slice(0, 10).map(village => (
                 <button
                   key={village}
                   type="button"
                   onClick={() => handleVillageSelect(village)}
-                  className="w-full px-4 py-3 text-right text-lg hover:bg-gray-100 transition-colors"
+                  className="w-full px-4 py-3 text-right text-lg hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 transition-colors"
                 >
                   {village}
                 </button>
@@ -290,8 +292,8 @@ export default function EditCustomerPage() {
             type="text"
             value={formData.national_id}
             onChange={(e) => handleChange('national_id', e.target.value)}
-            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
-              errors.national_id ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 text-lg border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:bg-gray-700 dark:text-white ${
+              errors.national_id ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             dir="ltr"
             maxLength={14}
@@ -307,7 +309,7 @@ export default function EditCustomerPage() {
             type="text"
             value={formData.address}
             onChange={(e) => handleChange('address', e.target.value)}
-            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
         </div>
 
@@ -317,7 +319,7 @@ export default function EditCustomerPage() {
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+            className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
           />
         </div>
 

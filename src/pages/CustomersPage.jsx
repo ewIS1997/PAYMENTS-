@@ -6,6 +6,8 @@ import AddCustomerModal from '../components/AddCustomerModal';
 import EmptyState from '../components/EmptyState';
 import { IconSearch, IconX, IconPlus } from '../components/Icons';
 import { useCustomers } from '../hooks/useCustomers';
+import demoData from '../firebase/demoStore';
+import { isFirebaseConfigured } from '../firebase/demoMode';
 
 export default function CustomersPage() {
   const navigate = useNavigate();
@@ -20,6 +22,25 @@ export default function CustomersPage() {
       if (c.phone) map[c.phone] = c.full_name;
     });
     return map;
+  }, [customers]);
+
+  const customerStatuses = useMemo(() => {
+    const statuses = {};
+    if (!isFirebaseConfigured) {
+      customers.forEach(c => {
+        const insts = demoData.installments.filter(i => i.customer_id === c.id);
+        const hasLate = insts.some(i => i.status === 'late');
+        const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
+        if (hasLate) {
+          statuses[c.id] = 'late';
+        } else if (hasPending) {
+          statuses[c.id] = 'pending';
+        } else {
+          statuses[c.id] = 'clear';
+        }
+      });
+    }
+    return statuses;
   }, [customers]);
 
   const filteredCustomers = useMemo(() => {
@@ -109,18 +130,28 @@ export default function CustomersPage() {
           <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
           <input
             type="text"
-            placeholder="ابحث بالاسم، الهاتف، المدينة، العنوان، الرقم القومي..."
+            placeholder="ابحث بالاسم، الهاتف، المدينة، الرقم القومي..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full px-4 py-3 pr-10 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
-          {search && (
+          {search && search.length >= 14 && /^\d+$/.test(search) && (
+            <span className="absolute left-12 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded">
+              بحث بالرقم القومي
+            </span>
+          )}
+{search && (
             <button
               onClick={() => setSearch('')}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <IconX className="w-4 h-4" />
             </button>
+          )}
+          {search && search.length >= 14 && /^\d+$/.test(search) && (
+            <span className="absolute left-14 top-1/2 -translate-y-1/2 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded whitespace-nowrap">
+              بحث بالرقم القومي
+            </span>
           )}
         </div>
 
@@ -178,6 +209,7 @@ export default function CustomersPage() {
             <CustomerCard
               key={customer.id}
               customer={customer}
+              status={customerStatuses[customer.id]}
               onClick={() => navigate(`/customers/${customer.id}`)}
             />
           ))}

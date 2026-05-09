@@ -104,7 +104,7 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
         issue_date: Timestamp.fromDate(today),
         month: dueDate ? dueDate.getMonth() : today.getMonth(),
         year: dueDate ? dueDate.getFullYear() : today.getFullYear(),
-        amount: installment.amount,
+        amount: installment.paid_amount || installment.amount,
         printed: false,
         created_at: serverTimestamp(),
       };
