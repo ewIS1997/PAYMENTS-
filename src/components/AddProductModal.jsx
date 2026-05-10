@@ -84,8 +84,8 @@ export default function AddProductModal({ isOpen, onClose, categories, editProdu
 
   if (!isOpen) return null;
 
-  const inputBase = 'w-full px-3 py-2.5 text-base font-semibold border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-colors bg-gray-50 focus:bg-white';
-  const inputError = 'border-red-400 bg-red-50 focus:bg-white';
+  const inputBase = 'w-full px-3 py-2.5 text-base font-semibold border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-colors bg-gray-50 dark:bg-gray-700 dark:text-white focus:bg-white dark:focus:bg-gray-600';
+  const inputError = 'border-red-400 bg-red-50 dark:bg-red-900/30 focus:bg-white dark:focus:bg-gray-600';
   const inputNormal = 'border-gray-200 hover:border-gray-300';
   const labelClass = 'block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1';
 

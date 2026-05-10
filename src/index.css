@@ -33,24 +33,8 @@ body {
   color: rgb(255 255 255);
 }
 
-/* Override any white backgrounds with softer alternatives */
-.bg-white,
-[class*="bg-white"],
-.bg-white\/ *,
-[data-bg="white"] {
-  background-color: rgb(249 250 251) !important;
-}
-
-.dark .bg-white,
-.dark [class*="bg-white"],
-.dark [data-bg="white"] {
-  background-color: rgb(31 41 55) !important;
-}
-
-/* Override white text */
-.text-white:not(.bg-white *) {
-  color: rgb(243 244 246) !important;
-}
+/* Soft color scheme — use bg-gray-50 instead of bg-white */
+/* Each component must specify its own dark:bg-gray-800 for dark mode */
 
 @media print {
   @page {
@@ -95,6 +79,23 @@ body {
 
   nav, aside, header {
     display: none !important;
+  }
+
+  /* Force light mode for printing even if dark mode is active */
+  html, html.dark, body, body.dark {
+    background: white !important;
+    color: black !important;
+  }
+
+  .dark .receipt-block,
+  .receipt-block {
+    background: white !important;
+    border-color: #9ca3af !important;
+  }
+
+  .dark .receipt-block *,
+  .receipt-block * {
+    color: black !important;
   }
 }
 

@@ -218,7 +218,7 @@ export default function AddContractPage() {
           )}
 
           {showProductPicker && (
-            <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-20 max-h-72 overflow-hidden">
+            <div className="absolute top-full mt-1 left-0 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-20 max-h-72 overflow-hidden">
               <div className="p-3 border-b border-gray-100 space-y-2">
                 <div className="relative">
                   <IconSearch className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />

@@ -47,7 +47,7 @@ export default function ContractDetailPage() {
             <div className="bg-gray-200 rounded h-5 w-1/3"></div>
           </div>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 h-20 animate-pulse">
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 h-20 animate-pulse">
               <div className="bg-gray-200 rounded h-5 w-2/3"></div>
             </div>
           ))}
@@ -138,7 +138,7 @@ export default function ContractDetailPage() {
           {installments.map(inst => (
             <div
               key={inst.id}
-              className={`bg-white rounded-xl border p-4 ${
+              className={`bg-white dark:bg-gray-800 rounded-xl border p-4 ${
                 inst.status === 'late'
                   ? 'border-red-300 border-r-4'
                   : inst.status === 'paid'

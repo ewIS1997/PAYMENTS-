@@ -710,7 +710,7 @@ export default function CollectionPage() {
               return (
                 <div
                   key={group.customerId}
-                  className={`bg-white rounded-xl border overflow-hidden transition-all ${
+                  className={`bg-white dark:bg-gray-800 rounded-xl border overflow-hidden transition-all ${
                     hasLate ? 'border-red-300' : 'border-gray-200'
                   }`}
                 >

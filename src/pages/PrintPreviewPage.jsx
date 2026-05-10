@@ -64,9 +64,9 @@ export default function PrintPreviewPage() {
     return (
       <AppShell>
         <div className="animate-pulse space-y-4">
-          <div className="bg-gray-200 rounded h-8 w-48"></div>
+          <div className="bg-gray-200 dark:bg-gray-700 rounded h-8 w-48"></div>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-200 rounded-xl h-64"></div>
+            <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-xl h-64"></div>
           ))}
         </div>
       </AppShell>
@@ -76,7 +76,7 @@ export default function PrintPreviewPage() {
   if (error) {
     return (
       <AppShell>
-        <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-lg mb-4">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-lg mb-4">
           {error}
         </div>
         <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg min-h-[44px]">
@@ -104,7 +104,7 @@ export default function PrintPreviewPage() {
       <div className="print:hidden flex gap-3 mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg text-lg transition-colors min-h-[44px]"
+          className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg text-lg transition-colors min-h-[44px]"
         >
           رجوع
         </button>

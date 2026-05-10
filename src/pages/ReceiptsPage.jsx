@@ -189,7 +189,7 @@ export default function ReceiptsPage() {
               {isPreview && (
                 <div className="border-t border-gray-200">
                   <div className="p-4 bg-gray-50">
-                    <div className="max-w-md mx-auto border border-gray-300 rounded-lg bg-white shadow-sm">
+                    <div className="max-w-md mx-auto border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
                       <ReceiptBlock
                         receipt={item.receipt}
                         customer={item.customer}

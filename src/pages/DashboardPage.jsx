@@ -103,7 +103,7 @@ export default function DashboardPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="ابحث عن عميل بالاسم أو رقم الهاتف"
-          className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           dir="rtl"
         />
         {searchResults.length > 0 && (
@@ -112,7 +112,7 @@ export default function DashboardPage() {
               <button
                 key={c.id}
                 onClick={() => { setSearchTerm(''); navigate(`/customers/${c.id}`); }}
-                className="w-full text-right px-4 py-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-100 transition-colors"
+                className="w-full text-right px-4 py-3 bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-lg border border-gray-100 dark:border-gray-600 transition-colors"
               >
                 <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">{c.full_name}</span>
                 <span className="text-base text-gray-500 dark:text-gray-400 mr-3" dir="ltr">{c.phone}</span>
@@ -127,25 +127,25 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-5xl font-bold text-red-600 mb-2">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl p-6 text-center">
+          <div className="text-5xl font-bold text-red-600 dark:text-red-400 mb-2">
             {loading ? '-' : formatCurrency(stats.unpaidThisMonth)}
           </div>
-          <div className="text-xl text-red-700">الأقساط غير المدفوعة هذا الشهر</div>
+          <div className="text-xl text-red-700 dark:text-red-300">الأقساط غير المدفوعة هذا الشهر</div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-          <div className="text-5xl font-bold text-green-600 mb-2">
+        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-xl p-6 text-center">
+          <div className="text-5xl font-bold text-green-600 dark:text-green-400 mb-2">
             {loading ? '-' : formatCurrency(stats.collectedThisMonth)}
           </div>
-          <div className="text-xl text-green-700">إجمالي المحصّل هذا الشهر</div>
+          <div className="text-xl text-green-700 dark:text-green-300">إجمالي المحصّل هذا الشهر</div>
         </div>
 
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-center">
-          <div className="text-5xl font-bold text-orange-600 mb-2">
+        <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-xl p-6 text-center">
+          <div className="text-5xl font-bold text-orange-600 dark:text-orange-400 mb-2">
             {loading ? '-' : stats.lateCustomers}
           </div>
-          <div className="text-xl text-orange-700">عدد العملاء المتأخرين</div>
+          <div className="text-xl text-orange-700 dark:text-orange-300">عدد العملاء المتأخرين</div>
         </div>
       </div>
 

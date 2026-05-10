@@ -224,13 +224,13 @@ export default function AddCustomerPage() {
             placeholder="اكتب اسم القرية..."
           />
           {showSuggestions && filteredVillages.length > 0 && (
-            <div className="mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {filteredVillages.slice(0, 10).map(village => (
                 <button
                   key={village}
                   type="button"
                   onClick={() => handleVillageSelect(village)}
-                  className="w-full px-4 py-3 text-right text-lg hover:bg-gray-100 transition-colors"
+                  className="w-full px-4 py-3 text-right text-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   {village}
                 </button>
