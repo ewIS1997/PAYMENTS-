@@ -2,6 +2,7 @@ import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
 import demoData, { getNextDemoId } from '../demo/demoStore';
 import { generateInstallments } from '../utils/installmentUtils';
+import { formatLocalDateString, parseLocalDate } from '../utils/dateUtils';
 
 export async function addContractWithInstallments(contractData, customer) {
   const start = new Date(contractData.start_date);
@@ -17,8 +18,8 @@ export async function addContractWithInstallments(contractData, customer) {
     total_amount: Number(contractData.total_amount),
     monthly_amount: Number(contractData.monthly_amount),
     months_count: months,
-    start_date: start.toISOString().split('T')[0],
-    end_date: end.toISOString().split('T')[0],
+    start_date: formatLocalDateString(start),
+    end_date: formatLocalDateString(end),
     status: 'active',
   };
 
@@ -51,7 +52,7 @@ export async function addContractWithInstallments(contractData, customer) {
     customer_id: inst.customer_id,
     amount: inst.amount,
     status: 'pending',
-    due_date: inst.due_date.toISOString().split('T')[0],
+    due_date: formatLocalDateString(inst.due_date),
     payment_date: null,
     receipt_id: null,
   }));
@@ -98,9 +99,9 @@ export async function getInstallmentsByContractId(contractId) {
     .eq('contract_id', contractId)
     .order('due_date', { ascending: true });
   if (error) throw error;
-  return (data || []).map(i => ({
+    return (data || []).map(i => ({
     ...i,
-    due_date: new Date(i.due_date),
+    due_date: parseLocalDate(i.due_date),
     payment_date: i.payment_date ? new Date(i.payment_date) : null,
   }));
 }
@@ -117,11 +118,11 @@ export async function getInstallmentsByCustomerId(customerId) {
     .eq('customer_id', customerId)
     .order('due_date', { ascending: true });
   if (error) throw error;
-  return (data || []).map(i => ({
-    ...i,
-    due_date: new Date(i.due_date),
-    payment_date: i.payment_date ? new Date(i.payment_date) : null,
-  }));
+    return (data || []).map(i => ({
+      ...i,
+      due_date: parseLocalDate(i.due_date),
+      payment_date: i.payment_date ? new Date(i.payment_date) : null,
+    }));
 }
 
 export async function updateInstallmentStatus(installmentId, status, paymentDate = null) {

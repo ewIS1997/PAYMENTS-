@@ -24,6 +24,21 @@ export function formatDateForDisplay(date) {
   return `${day} ${month} ${year}`;
 }
 
+export function formatLocalDateString(date) {
+  const d = date instanceof Date ? date : new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function parseLocalDate(dateStr) {
+  if (!dateStr) return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+}
+
 export function toDateValue(field) {
   if (!field) return null;
   if (typeof field.toDate === 'function') return field.toDate();

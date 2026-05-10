@@ -1,6 +1,7 @@
 import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
 import demoData from '../demo/demoStore';
+import { formatLocalDateString, parseLocalDate } from '../utils/dateUtils';
 
 export async function fetchInstallmentsForCollection(village, month, year) {
   if (!isSupabaseConfigured) {
@@ -17,7 +18,7 @@ export async function fetchInstallmentsForCollection(village, month, year) {
   }
 
   const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
-  const monthEnd = new Date(year, month + 1, 0).toISOString().split('T')[0];
+  const monthEnd = formatLocalDateString(new Date(year, month + 1, 0));
 
   const { data: installments, error } = await supabase
     .from('installments')
@@ -46,7 +47,7 @@ export async function fetchInstallmentsForCollection(village, month, year) {
     })
     .map(i => ({
       ...i,
-      due_date: new Date(i.due_date),
+      due_date: parseLocalDate(i.due_date),
       payment_date: i.payment_date ? new Date(i.payment_date) : null,
     }));
 }
@@ -294,7 +295,7 @@ export async function getCustomerPaymentHistory(customerId) {
 
   return (installments || []).map(inst => ({
     ...inst,
-    due_date: new Date(inst.due_date),
+    due_date: parseLocalDate(inst.due_date),
     payment_date: inst.payment_date ? new Date(inst.payment_date) : null,
     receipt_number: receiptMap[inst.receipt_id] || null,
   }));

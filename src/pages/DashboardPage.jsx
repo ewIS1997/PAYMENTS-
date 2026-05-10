@@ -5,6 +5,7 @@ import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
 import demoData from '../demo/demoStore';
 import { formatCurrency } from '../utils/currencyUtils';
+import { formatLocalDateString } from '../utils/dateUtils';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export default function DashboardPage() {
         try {
           const now = new Date();
           const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-          const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+          const monthEnd = formatLocalDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
 
           const [{ data: unpaid }, { data: paid }, { data: late }, { data: customers }] = await Promise.all([
             supabase.from('installments').select('amount').in('status', ['pending', 'late']).gte('due_date', monthStart).lte('due_date', monthEnd),
