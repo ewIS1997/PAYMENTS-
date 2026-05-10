@@ -43,9 +43,11 @@ export default function CustomersPage() {
       }
       if (isSupabaseConfigured) {
         const statuses = {};
+        const customerIds = customers.map(c => c.id);
         const { data: installments } = await supabase
           .from('installments')
-          .select('customer_id, status');
+          .select('customer_id, status')
+          .in('customer_id', customerIds.length ? customerIds : ['none']);
         const grouped = {};
         (installments || []).forEach(i => {
           if (!grouped[i.customer_id]) grouped[i.customer_id] = [];

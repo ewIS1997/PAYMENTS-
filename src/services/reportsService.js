@@ -129,18 +129,16 @@ export async function fetchLateCustomers() {
   });
 
   const customerIds = Object.keys(lateMap);
-  const results = [];
-  for (const cid of customerIds) {
-    const { data: cust } = await supabase
-      .from('customers')
-      .select('id, full_name, phone, village')
-      .eq('id', cid)
-      .maybeSingle();
-    if (cust) {
-      results.push({ ...cust, lateCount: lateMap[cid].lateCount });
-    }
-  }
-  return results.sort((a, b) => b.lateCount - a.lateCount);
+  const { data: custs } = await supabase
+    .from('customers')
+    .select('id, full_name, phone, village')
+    .in('id', customerIds.length ? customerIds : ['none']);
+  const custMap = {};
+  (custs || []).forEach(c => { custMap[c.id] = c; });
+  return customerIds.map(cid => {
+    const cust = custMap[cid];
+    return { id: cid, full_name: cust?.full_name || '', phone: cust?.phone || '', village: cust?.village || '', lateCount: lateMap[cid].lateCount };
+  }).sort((a, b) => b.lateCount - a.lateCount);
 }
 
 export async function fetchGrandTotals() {
@@ -157,15 +155,7 @@ export async function fetchGrandTotals() {
     };
   }
 
-  const { data: all } = await supabase.from('installments').select('status, amount, paid_amount');
-  const paid = (all || []).filter(i => i.status === 'paid');
-  const partial = (all || []).filter(i => i.status === 'partial');
-  const unpaid = (all || []).filter(i => i.status === 'pending' || i.status === 'late');
-  const collectedFromPaid = paid.reduce((s, i) => s + (i.amount || 0), 0);
-  const collectedFromPartial = partial.reduce((s, i) => s + (i.paid_amount || 0), 0);
-  const remainingFromPartial = partial.reduce((s, i) => s + ((i.amount || 0) - (i.paid_amount || 0)), 0);
-  return {
-    totalCollected: collectedFromPaid + collectedFromPartial,
-    totalOutstanding: unpaid.reduce((s, i) => s + (i.amount || 0), 0) + remainingFromPartial,
-  };
+  const { data, error } = await supabase.rpc('get_grand_totals');
+  if (error) throw error;
+  return data;
 }

@@ -282,23 +282,20 @@ export async function getCustomerPaymentHistory(customerId) {
     .order('due_date', { ascending: false });
   if (error) throw error;
 
-  const result = [];
-  for (const inst of (installments || [])) {
-    let receiptNumber = null;
-    if (inst.receipt_id) {
-      const { data: receipt } = await supabase
-        .from('receipts')
-        .select('receipt_number')
-        .eq('id', inst.receipt_id)
-        .maybeSingle();
-      if (receipt) receiptNumber = receipt.receipt_number;
-    }
-    result.push({
-      ...inst,
-      due_date: new Date(inst.due_date),
-      payment_date: inst.payment_date ? new Date(inst.payment_date) : null,
-      receipt_number: receiptNumber,
-    });
+  const receiptIds = [...new Set((installments || []).map(i => i.receipt_id).filter(Boolean))];
+  const receiptMap = {};
+  if (receiptIds.length > 0) {
+    const { data: receipts } = await supabase
+      .from('receipts')
+      .select('id, receipt_number')
+      .in('id', receiptIds);
+    (receipts || []).forEach(r => { receiptMap[r.id] = r.receipt_number; });
   }
-  return result;
+
+  return (installments || []).map(inst => ({
+    ...inst,
+    due_date: new Date(inst.due_date),
+    payment_date: inst.payment_date ? new Date(inst.payment_date) : null,
+    receipt_number: receiptMap[inst.receipt_id] || null,
+  }));
 }

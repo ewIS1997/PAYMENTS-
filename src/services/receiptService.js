@@ -68,49 +68,53 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
     receiptYear = today.getFullYear();
   }
 
-  const newReceipts = [];
-  const newReceiptIds = [];
-
-  for (let i = 0; i < count; i++) {
-    lastNumber += 1;
-    const receiptNumber = formatReceiptNumber(prefix, receiptYear, lastNumber);
-    const installment = toGenerate[i];
-    const dueDate = installment.due_date?.toDate?.() || installment.due_date;
-
-    const receiptDoc = {
-      receipt_number: receiptNumber,
-      installment_id: installment.id,
-      customer_id: installment.customer_id,
-      customer_name: customersMap?.[installment.customer_id]?.full_name || '',
-      contract_id: installment.contract_id,
+  lastNumber += count;
+  const receiptDocs = toGenerate.map((inst, i) => {
+    const seq = lastNumber - count + i + 1;
+    const dueDate = inst.due_date?.toDate?.() || inst.due_date;
+    return {
+      receipt_number: formatReceiptNumber(prefix, receiptYear, seq),
+      installment_id: inst.id,
+      customer_id: inst.customer_id,
+      customer_name: customersMap?.[inst.customer_id]?.full_name || '',
+      contract_id: inst.contract_id,
       issue_date: today.toISOString(),
       month: dueDate ? dueDate.getMonth() : today.getMonth(),
       year: dueDate ? dueDate.getFullYear() : today.getFullYear(),
-      amount: installment.paid_amount || installment.amount,
+      amount: inst.paid_amount || inst.amount,
       printed: false,
     };
+  });
 
-    const { data: newReceipt, error: receiptError } = await supabase
-      .from('receipts')
-      .insert(receiptDoc)
-      .select()
-      .single();
-    if (receiptError) throw receiptError;
+  const { data: newReceipts, error: insertError } = await supabase
+    .from('receipts')
+    .insert(receiptDocs)
+    .select();
+  if (insertError) throw insertError;
 
-    const customer = customersMap?.[installment.customer_id] || {};
-    const contract = contractsMap?.[installment.contract_id] || {};
-    newReceipts.push({
-      ...newReceipt,
-      customer: { full_name: customer.full_name || '', phone: customer.phone || '', village: customer.village || '', address: customer.address || '' },
-      contract: { product_name: contract.product_name || '' },
-    });
-    newReceiptIds.push(newReceipt.id);
+  const now = new Date().toISOString();
+  for (const receipt of newReceipts) {
+    const installment = toGenerate.find(inst => inst.id === receipt.installment_id);
+    const customer = customersMap?.[installment?.customer_id] || {};
+    const contract = contractsMap?.[installment?.contract_id] || {};
 
     await supabase
       .from('installments')
-      .update({ receipt_id: newReceipt.id, updated_at: new Date().toISOString() })
-      .eq('id', installment.id);
+      .update({ receipt_id: receipt.id, updated_at: now })
+      .eq('id', receipt.installment_id);
   }
+
+  const newReceiptIds = newReceipts.map(r => r.id);
+  const enriched = newReceipts.map(r => {
+    const inst = toGenerate.find(i => i.id === r.installment_id);
+    const customer = customersMap?.[inst?.customer_id] || {};
+    const contract = contractsMap?.[inst?.contract_id] || {};
+    return {
+      ...r,
+      customer: { full_name: customer.full_name || '', phone: customer.phone || '', village: customer.village || '', address: customer.address || '' },
+      contract: { product_name: contract.product_name || '' },
+    };
+  });
 
   await supabase
     .from('settings')

@@ -102,3 +102,25 @@ CREATE INDEX idx_installments_status ON installments(status);
 CREATE INDEX idx_installments_due_date ON installments(due_date);
 CREATE INDEX idx_receipts_customer_id ON receipts(customer_id);
 CREATE INDEX idx_receipts_contract_id ON receipts(contract_id);
+
+-- Composite indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_installments_status_due_date ON installments(status, due_date);
+CREATE INDEX IF NOT EXISTS idx_installments_customer_id_status ON installments(customer_id, status);
+CREATE INDEX IF NOT EXISTS idx_receipts_customer_id_issue_date ON receipts(customer_id, issue_date);
+CREATE INDEX IF NOT EXISTS idx_contracts_customer_id_status ON contracts(customer_id, status);
+
+-- RPC for aggregated grand totals (avoids transferring all rows to client)
+CREATE OR REPLACE FUNCTION get_grand_totals()
+RETURNS JSON
+LANGUAGE SQL
+STABLE
+AS $$
+SELECT json_build_object(
+  'totalCollected',
+    COALESCE((SELECT SUM(amount) FROM installments WHERE status = 'paid'), 0)
+    + COALESCE((SELECT SUM(paid_amount) FROM installments WHERE status = 'partial'), 0),
+  'totalOutstanding',
+    COALESCE((SELECT SUM(amount) FROM installments WHERE status IN ('pending', 'late')), 0)
+    + COALESCE((SELECT SUM(amount - paid_amount) FROM installments WHERE status = 'partial'), 0)
+);
+$$;

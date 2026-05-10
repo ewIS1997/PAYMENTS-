@@ -113,7 +113,8 @@ export async function findPotentialDuplicates(phoneNumber) {
   const { data, error } = await supabase
     .from('customers')
     .select('*')
-    .eq('isdeleted', false);
+    .eq('isdeleted', false)
+    .ilike('phone', `%${similarPhone}`);
   if (error) throw error;
-  return (data || []).filter(c => c.phone && c.phone.slice(-7) === similarPhone);
+  return data || [];
 }

@@ -37,17 +37,21 @@ export default function ReceiptsPage() {
       return;
     }
     const results = await getReceiptsBySearch(term);
-    const enriched = await Promise.all(results.map(async (r) => {
-      const { data: customer } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('id', r.customer_id)
-        .maybeSingle();
-      const { data: contract } = await supabase
-        .from('contracts')
-        .select('*')
-        .eq('id', r.contract_id)
-        .maybeSingle();
+
+    const customerIds = [...new Set(results.map(r => r.customer_id).filter(Boolean))];
+    const contractIds = [...new Set(results.map(r => r.contract_id).filter(Boolean))];
+
+    const [{ data: customers }, { data: contracts }] = await Promise.all([
+      supabase.from('customers').select('*').in('id', customerIds.length ? customerIds : ['none']),
+      supabase.from('contracts').select('*').in('id', contractIds.length ? contractIds : ['none']),
+    ]);
+
+    const custMap = {}; (customers || []).forEach(c => { custMap[c.id] = c; });
+    const ctMap = {}; (contracts || []).forEach(c => { ctMap[c.id] = c; });
+
+    const enriched = results.map(r => {
+      const customer = custMap[r.customer_id];
+      const contract = ctMap[r.contract_id];
       return {
         receipt: r,
         customer: customer ? { id: customer.id, ...customer } : null,
@@ -58,7 +62,7 @@ export default function ReceiptsPage() {
           contract?.product_name,
         ].filter(Boolean).join(' ').toLowerCase(),
       };
-    }));
+    });
     setFiltered(enriched.filter(item => item.searchText.includes(lower)));
   }, []);
 

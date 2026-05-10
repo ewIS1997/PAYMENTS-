@@ -5,10 +5,9 @@ import StatusBadge from '../components/StatusBadge';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import EmptyState from '../components/EmptyState';
 import Toast from '../components/Toast';
+import { supabase } from '../supabase/client';
 import { fetchInstallmentsForCollection, markInstallmentAsPaid, markInstallmentAsLate, bulkMarkInstallmentsAsPaid, undoMarkInstallmentAsPaid, recordPartialPayment, getAllVillages, getCustomerPaymentHistory } from '../services/collectionService';
 import { generateReceipts } from '../services/receiptService';
-import { getContract } from '../services/contractService';
-import { getCustomer } from '../services/customerService';
 import { formatCurrency } from '../utils/currencyUtils';
 import { getArabicMonthName } from '../utils/dateUtils';
 
@@ -129,22 +128,20 @@ export default function CollectionPage() {
       const cMap = {};
       const ctMap = {};
       const uniqueCustomerIds = [...new Set(results.map(i => i.customer_id))];
-      for (const cid of uniqueCustomerIds) {
-        try {
-          const cust = await getCustomer(cid);
-          if (cust) cMap[cid] = cust;
-        } catch (err) {
-          console.error('Error fetching customer:', err);
-        }
+      if (uniqueCustomerIds.length > 0) {
+        const { data: custs } = await supabase
+          .from('customers')
+          .select('*')
+          .in('id', uniqueCustomerIds);
+        (custs || []).forEach(c => { cMap[c.id] = c; });
       }
       const uniqueContractIds = [...new Set(results.map(i => i.contract_id))];
-      for (const contractId of uniqueContractIds) {
-        try {
-          const contract = await getContract(contractId);
-          if (contract) ctMap[contractId] = contract;
-        } catch (err) {
-          console.error('Error fetching contract:', err);
-        }
+      if (uniqueContractIds.length > 0) {
+        const { data: contracts } = await supabase
+          .from('contracts')
+          .select('*')
+          .in('id', uniqueContractIds);
+        (contracts || []).forEach(c => { ctMap[c.id] = c; });
       }
       setCustomersMap(cMap);
       setContractsMap(ctMap);
