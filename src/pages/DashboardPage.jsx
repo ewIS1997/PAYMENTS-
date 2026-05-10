@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
-import { isFirebaseConfigured } from '../firebase/demoMode';
 import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
-import demoData from '../firebase/demoStore';
+import demoData from '../demo/demoStore';
 import { formatCurrency } from '../utils/currencyUtils';
 
 export default function DashboardPage() {
@@ -21,7 +20,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchStats() {
-      if (!isFirebaseConfigured && !isSupabaseConfigured) {
+      if (!isSupabaseConfigured) {
         setAllCustomers(demoData.customers.filter(c => !c.isDeleted));
         const now = new Date();
         const unpaid = demoData.installments.filter(i => {
@@ -76,28 +75,6 @@ export default function DashboardPage() {
         } finally {
           setLoading(false);
         }
-        return;
-      }
-      try {
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-        const [unpaidSnap, paidSnap, lateSnap, customersSnap] = await Promise.all([
-          getDocs(query(collection(db, 'installments'), where('status', '==', 'pending'), where('due_date', '>=', monthStart), where('due_date', '<=', monthEnd))),
-          getDocs(query(collection(db, 'installments'), where('status', '==', 'paid'), where('payment_date', '>=', monthStart), where('payment_date', '<=', monthEnd))),
-          getDocs(query(collection(db, 'installments'), where('status', '==', 'late'))),
-          getDocs(query(collection(db, 'customers'), where('isDeleted', '==', false))),
-        ]);
-        const lateCustomerIds = new Set();
-        lateSnap.docs.forEach(doc => lateCustomerIds.add(doc.data().customer_id));
-        let collected = 0;
-        paidSnap.docs.forEach(doc => { collected += doc.data().amount || 0; });
-        setAllCustomers(customersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setStats({ unpaidThisMonth: unpaidSnap.size, collectedThisMonth: collected, lateCustomers: lateCustomerIds.size });
-      } catch (err) {
-        console.error('Error fetching dashboard stats:', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchStats();

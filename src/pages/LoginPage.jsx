@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { findLocalUser } from '../firebase/localUsers';
+import { findLocalUser } from '../auth/localUsers';
 import { IconWarning, IconEye, IconEyeOff } from '../components/Icons';
 
 export default function LoginPage() {

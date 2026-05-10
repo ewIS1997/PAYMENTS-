@@ -1,6 +1,5 @@
 import { supabase } from './client'
 import { isSupabaseConfigured } from './mode'
-import demoData from '../firebase/demoStore'
 
 const SEED_PRODUCTS = [
   { name: 'ثلاجة سامسونج 14 قدم', category: 'أجهزة كهربائية', default_price: 14000 },

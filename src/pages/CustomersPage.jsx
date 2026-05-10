@@ -6,10 +6,9 @@ import AddCustomerModal from '../components/AddCustomerModal';
 import EmptyState from '../components/EmptyState';
 import { IconSearch, IconX, IconPlus } from '../components/Icons';
 import { useCustomers } from '../hooks/useCustomers';
-import { isFirebaseConfigured } from '../firebase/demoMode';
 import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
-import demoData from '../firebase/demoStore';
+import demoData from '../demo/demoStore';
 
 export default function CustomersPage() {
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     async function computeStatuses() {
-      if (!isFirebaseConfigured && !isSupabaseConfigured) {
+      if (!isSupabaseConfigured) {
         const statuses = {};
         customers.forEach(c => {
           const insts = demoData.installments.filter(i => i.customer_id === c.id);

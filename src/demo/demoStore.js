@@ -274,9 +274,6 @@ function generateDemoData() {
   return { customers, contracts, installments, receipts };
 }
 
-// To generate demo data for local testing: const generated = generateDemoData();
-// and spread generated.customers/contracts/installments into demoData below.
-
 const demoData = {
   customers: [],
   contracts: [],
