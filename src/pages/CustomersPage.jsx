@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import CustomerCard from '../components/CustomerCard';
@@ -6,8 +6,10 @@ import AddCustomerModal from '../components/AddCustomerModal';
 import EmptyState from '../components/EmptyState';
 import { IconSearch, IconX, IconPlus } from '../components/Icons';
 import { useCustomers } from '../hooks/useCustomers';
-import demoData from '../firebase/demoStore';
 import { isFirebaseConfigured } from '../firebase/demoMode';
+import { isSupabaseConfigured } from '../supabase/mode';
+import { supabase } from '../supabase/client';
+import demoData from '../firebase/demoStore';
 
 export default function CustomersPage() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [selectedVillage, setSelectedVillage] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [customerStatuses, setCustomerStatuses] = useState({});
 
   const existingPhones = useMemo(() => {
     const map = {};
@@ -24,23 +27,45 @@ export default function CustomersPage() {
     return map;
   }, [customers]);
 
-  const customerStatuses = useMemo(() => {
-    const statuses = {};
-    if (!isFirebaseConfigured) {
-      customers.forEach(c => {
-        const insts = demoData.installments.filter(i => i.customer_id === c.id);
-        const hasLate = insts.some(i => i.status === 'late');
-        const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
-        if (hasLate) {
-          statuses[c.id] = 'late';
-        } else if (hasPending) {
-          statuses[c.id] = 'pending';
-        } else {
-          statuses[c.id] = 'clear';
-        }
-      });
+  useEffect(() => {
+    async function computeStatuses() {
+      if (!isFirebaseConfigured && !isSupabaseConfigured) {
+        const statuses = {};
+        customers.forEach(c => {
+          const insts = demoData.installments.filter(i => i.customer_id === c.id);
+          const hasLate = insts.some(i => i.status === 'late');
+          const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
+          if (hasLate) statuses[c.id] = 'late';
+          else if (hasPending) statuses[c.id] = 'pending';
+          else statuses[c.id] = 'clear';
+        });
+        setCustomerStatuses(statuses);
+        return;
+      }
+      if (isSupabaseConfigured) {
+        const statuses = {};
+        const { data: installments } = await supabase
+          .from('installments')
+          .select('customer_id, status');
+        const grouped = {};
+        (installments || []).forEach(i => {
+          if (!grouped[i.customer_id]) grouped[i.customer_id] = [];
+          grouped[i.customer_id].push(i);
+        });
+        customers.forEach(c => {
+          const insts = grouped[c.id] || [];
+          const hasLate = insts.some(i => i.status === 'late');
+          const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
+          if (hasLate) statuses[c.id] = 'late';
+          else if (hasPending) statuses[c.id] = 'pending';
+          else statuses[c.id] = 'clear';
+        });
+        setCustomerStatuses(statuses);
+      }
     }
-    return statuses;
+    if (customers.length > 0) {
+      computeStatuses();
+    }
   }, [customers]);
 
   const filteredCustomers = useMemo(() => {
@@ -48,7 +73,6 @@ export default function CustomersPage() {
     return customers.filter(customer => {
       const matchesVillage = !selectedVillage || customer.village === selectedVillage;
       if (!term) return matchesVillage;
-
       const fields = [
         customer.full_name,
         customer.phone,
@@ -57,11 +81,9 @@ export default function CustomersPage() {
         customer.national_id,
         customer.id,
       ];
-
       const matchesSearch = fields.some(field =>
         field && String(field).toLowerCase().includes(term)
       );
-
       return matchesSearch && matchesVillage;
     });
   }, [customers, search, selectedVillage]);
@@ -147,7 +169,7 @@ export default function CustomersPage() {
               بحث بالرقم القومي
             </span>
           )}
-{search && (
+          {search && (
             <button
               onClick={() => setSearch('')}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"

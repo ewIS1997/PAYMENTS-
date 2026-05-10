@@ -4,34 +4,11 @@ import AppShell from '../components/AppShell';
 import EmptyState from '../components/EmptyState';
 import ReceiptBlock from '../components/ReceiptBlock';
 import { IconSearch, IconX } from '../components/Icons';
+import { getReceiptsBySearch } from '../services/receiptService';
 import { getSettings } from '../services/settingsService';
+import { supabase } from '../supabase/client';
 import { formatCurrency } from '../utils/currencyUtils';
 import { formatArabicMonth } from '../utils/dateUtils';
-import { isFirebaseConfigured } from '../firebase/demoMode';
-import demoData from '../firebase/demoStore';
-
-function buildSearchIndex() {
-  if (!isFirebaseConfigured) {
-    return demoData.receipts.map(r => {
-      const customer = demoData.customers.find(c => c.id === r.customer_id && !c.isDeleted);
-      const contract = demoData.contracts.find(c => c.id === r.contract_id);
-      return {
-        receipt: r,
-        customer: customer ? { id: customer.id, ...customer } : null,
-        contract: contract ? { id: contract.id, ...contract } : null,
-        searchText: [
-          r.receipt_number,
-          r.customer_name,
-          customer?.full_name,
-          customer?.phone,
-          customer?.village,
-          contract?.product_name,
-        ].filter(Boolean).join(' ').toLowerCase(),
-      };
-    });
-  }
-  return [];
-}
 
 export default function ReceiptsPage() {
   const navigate = useNavigate();
@@ -46,25 +23,47 @@ export default function ReceiptsPage() {
     async function init() {
       const s = await getSettings();
       setSettings(s);
-      const indexed = buildSearchIndex();
-      setAllReceipts(indexed);
-      setFiltered(indexed);
+      setAllReceipts([]);
+      setFiltered([]);
       setLoading(false);
     }
     init();
   }, []);
 
-  const handleSearch = useCallback((term) => {
+  const handleSearch = useCallback(async (term) => {
     const lower = term.trim().toLowerCase();
     if (!lower) {
-      setFiltered(allReceipts);
+      setFiltered([]);
       return;
     }
-    setFiltered(allReceipts.filter(item => item.searchText.includes(lower)));
-  }, [allReceipts]);
+    const results = await getReceiptsBySearch(term);
+    const enriched = await Promise.all(results.map(async (r) => {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', r.customer_id)
+        .maybeSingle();
+      const { data: contract } = await supabase
+        .from('contracts')
+        .select('*')
+        .eq('id', r.contract_id)
+        .maybeSingle();
+      return {
+        receipt: r,
+        customer: customer ? { id: customer.id, ...customer } : null,
+        contract: contract ? { id: contract.id, ...contract } : null,
+        searchText: [
+          r.receipt_number, r.customer_name,
+          customer?.full_name, customer?.phone, customer?.village,
+          contract?.product_name,
+        ].filter(Boolean).join(' ').toLowerCase(),
+      };
+    }));
+    setFiltered(enriched.filter(item => item.searchText.includes(lower)));
+  }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => handleSearch(searchTerm), 150);
+    const timer = setTimeout(() => handleSearch(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm, handleSearch]);
 
@@ -125,21 +124,19 @@ export default function ReceiptsPage() {
         </div>
         {searchTerm && (
           <p className="text-base text-gray-500 dark:text-gray-400 mt-2">
-            {totalCount} نتيجة {totalCount !== allReceipts.length && `من ${allReceipts.length}`}
+            {totalCount} نتيجة
           </p>
         )}
       </div>
 
-      {allReceipts.length === 0 && (
+      {!searchTerm && (
         <EmptyState
-          icon="📄"
-          message="لم يتم إنشاء إيصالات بعد"
-          actionLabel="الذهاب للتحصيل"
-          onAction={() => navigate('/collection')}
+          icon="🔍"
+          message="ابحث عن الإيصالات باستخدام رقم الإيصال أو اسم العميل"
         />
       )}
 
-      {allReceipts.length > 0 && totalCount === 0 && searchTerm && (
+      {searchTerm && totalCount === 0 && (
         <EmptyState
           icon="🔍"
           message="لم يتم العثور على إيصالات مطابقة"

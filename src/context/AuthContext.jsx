@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { enableDemoMode } from '../firebase/demoMode';
+import { isSupabaseConfigured, enableSupabaseMode } from '../supabase/mode';
+import { seedInitialData } from '../supabase/seed';
 
 const AuthContext = createContext(null);
 
@@ -10,21 +11,27 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    enableDemoMode();
-    
-    const savedUser = localStorage.getItem(STORAGE_KEY);
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem(STORAGE_KEY);
+    async function init() {
+      const hasSupabaseUrl = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (hasSupabaseUrl) {
+        enableSupabaseMode();
+        await seedInitialData();
       }
+
+      const savedUser = localStorage.getItem(STORAGE_KEY);
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    init();
   }, []);
 
   const localLogin = (localUser) => {
-    enableDemoMode();
     const userData = {
       uid: localUser.uid,
       email: localUser.email,

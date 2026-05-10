@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../firebase/config';
 import { isFirebaseConfigured } from '../firebase/demoMode';
+import { isSupabaseConfigured } from '../supabase/mode';
+import { supabase } from '../supabase/client';
 import demoData from '../firebase/demoStore';
 import { formatCurrency } from '../utils/currencyUtils';
 
@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchStats() {
-      if (!isFirebaseConfigured) {
+      if (!isFirebaseConfigured && !isSupabaseConfigured) {
         setAllCustomers(demoData.customers.filter(c => !c.isDeleted));
         const now = new Date();
         const unpaid = demoData.installments.filter(i => {
@@ -48,24 +48,50 @@ export default function DashboardPage() {
         setLoading(false);
         return;
       }
+      if (isSupabaseConfigured) {
+        try {
+          const now = new Date();
+          const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+          const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+          const [{ data: unpaid }, { data: paid }, { data: late }, { data: customers }] = await Promise.all([
+            supabase.from('installments').select('amount').in('status', ['pending', 'late']).gte('due_date', monthStart).lte('due_date', monthEnd),
+            supabase.from('installments').select('amount, payment_date').eq('status', 'paid').gte('payment_date', monthStart).lte('payment_date', monthEnd),
+            supabase.from('installments').select('customer_id').eq('status', 'late'),
+            supabase.from('customers').select('id, full_name, phone, village').eq('isDeleted', false),
+          ]);
+
+          const lateCustomerIds = new Set((late || []).map(i => i.customer_id));
+          let collected = 0;
+          (paid || []).forEach(i => { collected += i.amount || 0; });
+
+          setAllCustomers(customers || []);
+          setStats({
+            unpaidThisMonth: (unpaid || []).reduce((s, i) => s + (i.amount || 0), 0),
+            collectedThisMonth: collected,
+            lateCustomers: lateCustomerIds.size,
+          });
+        } catch (err) {
+          console.error('Error fetching dashboard stats:', err);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
       try {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
         const [unpaidSnap, paidSnap, lateSnap, customersSnap] = await Promise.all([
           getDocs(query(collection(db, 'installments'), where('status', '==', 'pending'), where('due_date', '>=', monthStart), where('due_date', '<=', monthEnd))),
           getDocs(query(collection(db, 'installments'), where('status', '==', 'paid'), where('payment_date', '>=', monthStart), where('payment_date', '<=', monthEnd))),
           getDocs(query(collection(db, 'installments'), where('status', '==', 'late'))),
           getDocs(query(collection(db, 'customers'), where('isDeleted', '==', false))),
         ]);
-
         const lateCustomerIds = new Set();
         lateSnap.docs.forEach(doc => lateCustomerIds.add(doc.data().customer_id));
-
         let collected = 0;
         paidSnap.docs.forEach(doc => { collected += doc.data().amount || 0; });
-
         setAllCustomers(customersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         setStats({ unpaidThisMonth: unpaidSnap.size, collectedThisMonth: collected, lateCustomers: lateCustomerIds.size });
       } catch (err) {
@@ -74,7 +100,6 @@ export default function DashboardPage() {
         setLoading(false);
       }
     }
-
     fetchStats();
   }, []);
 
@@ -95,7 +120,6 @@ export default function DashboardPage() {
     <AppShell>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">الرئيسية</h1>
 
-      {/* Quick Search */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6">
         <input
           type="text"
@@ -110,10 +134,7 @@ export default function DashboardPage() {
             {searchResults.map(c => (
               <button
                 key={c.id}
-                onClick={() => {
-                  setSearchTerm('');
-                  navigate(`/customers/${c.id}`);
-                }}
+                onClick={() => { setSearchTerm(''); navigate(`/customers/${c.id}`); }}
                 className="w-full text-right px-4 py-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-100 transition-colors"
               >
                 <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">{c.full_name}</span>
@@ -128,11 +149,10 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <div className="text-5xl font-bold text-red-600 mb-2">
-            {loading ? '-' : stats.unpaidThisMonth}
+            {loading ? '-' : formatCurrency(stats.unpaidThisMonth)}
           </div>
           <div className="text-xl text-red-700">الأقساط غير المدفوعة هذا الشهر</div>
         </div>
@@ -152,7 +172,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* This Month's Collection Shortcut */}
       <button
         onClick={() => navigate('/collection')}
         className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold py-4 rounded-lg transition-colors min-h-[44px]"
