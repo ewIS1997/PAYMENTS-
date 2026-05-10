@@ -4,7 +4,7 @@ import demoData, { getNextDemoId } from '../demo/demoStore';
 
 export async function addProduct(productData) {
   if (!isSupabaseConfigured) {
-    const newProduct = { id: getNextDemoId('prod'), ...productData, isDeleted: false };
+    const newProduct = { id: getNextDemoId('prod'), ...productData, isdeleted: false };
     demoData.products.push(newProduct);
     return newProduct;
   }
@@ -36,24 +36,24 @@ export async function updateProduct(productId, productData) {
 export async function softDeleteProduct(productId) {
   if (!isSupabaseConfigured) {
     const idx = demoData.products.findIndex(p => p.id === productId);
-    if (idx >= 0) demoData.products[idx].isDeleted = true;
+    if (idx >= 0) demoData.products[idx].isdeleted = true;
     return;
   }
   const { error } = await supabase
     .from('products')
-    .update({ isDeleted: true })
+    .update({ isdeleted: true })
     .eq('id', productId);
   if (error) throw error;
 }
 
 export async function getAllProducts() {
   if (!isSupabaseConfigured) {
-    return demoData.products.filter(p => !p.isDeleted);
+    return demoData.products.filter(p => !p.isdeleted);
   }
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .order('name', { ascending: true });
   if (error) throw error;
   return data || [];
@@ -61,12 +61,12 @@ export async function getAllProducts() {
 
 export async function getProductsByCategory(category) {
   if (!isSupabaseConfigured) {
-    return demoData.products.filter(p => !p.isDeleted && p.category === category);
+    return demoData.products.filter(p => !p.isdeleted && p.category === category);
   }
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .eq('category', category)
     .order('name', { ascending: true });
   if (error) throw error;
@@ -76,7 +76,7 @@ export async function getProductsByCategory(category) {
 export async function getUniqueCategories() {
   if (!isSupabaseConfigured) {
     const cats = new Set();
-    demoData.products.filter(p => !p.isDeleted).forEach(p => {
+    demoData.products.filter(p => !p.isdeleted).forEach(p => {
       if (p.category) cats.add(p.category);
     });
     return Array.from(cats).sort();
@@ -84,7 +84,7 @@ export async function getUniqueCategories() {
   const { data, error } = await supabase
     .from('products')
     .select('category')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .not('category', 'is', null);
   if (error) throw error;
   const cats = [...new Set((data || []).map(r => r.category).filter(Boolean))];

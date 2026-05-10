@@ -51,7 +51,7 @@ export async function fetchVillageBreakdown(month, year) {
     });
     const villageMap = {};
     relevant.forEach(inst => {
-      const customer = demoData.customers.find(c => c.id === inst.customer_id && !c.isDeleted);
+      const customer = demoData.customers.find(c => c.id === inst.customer_id && !c.isdeleted);
       const village = customer?.village || 'غير محدد';
       if (!villageMap[village]) villageMap[village] = { village, paidCount: 0, unpaidCount: 0, totalCollected: 0 };
       if (inst.status === 'paid') {
@@ -81,7 +81,7 @@ export async function fetchVillageBreakdown(month, year) {
     .from('customers')
     .select('id, village')
     .in('id', customerIds.length ? customerIds : ['none'])
-    .eq('isDeleted', false);
+    .eq('isdeleted', false);
 
   const villageMap = {};
   const custVillage = {};

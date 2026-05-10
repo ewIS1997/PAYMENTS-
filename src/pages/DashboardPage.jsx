@@ -21,7 +21,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       if (!isSupabaseConfigured) {
-        setAllCustomers(demoData.customers.filter(c => !c.isDeleted));
+        setAllCustomers(demoData.customers.filter(c => !c.isdeleted));
         const now = new Date();
         const unpaid = demoData.installments.filter(i => {
           return (i.status === 'pending' || i.status === 'late') && i.due_date?.getMonth() === now.getMonth() && i.due_date?.getFullYear() === now.getFullYear();
@@ -30,7 +30,7 @@ export default function DashboardPage() {
           return i.status === 'partial' && i.due_date?.getMonth() === now.getMonth() && i.due_date?.getFullYear() === now.getFullYear();
         });
         const paid = demoData.installments.filter(i => i.status === 'paid');
-        const activeCustomerIds = new Set(demoData.customers.filter(c => !c.isDeleted).map(c => c.id));
+        const activeCustomerIds = new Set(demoData.customers.filter(c => !c.isdeleted).map(c => c.id));
         const lateCustomerIds = new Set(
           demoData.installments
             .filter(i => i.status === 'late' && activeCustomerIds.has(i.customer_id))
@@ -57,7 +57,7 @@ export default function DashboardPage() {
             supabase.from('installments').select('amount').in('status', ['pending', 'late']).gte('due_date', monthStart).lte('due_date', monthEnd),
             supabase.from('installments').select('amount, payment_date').eq('status', 'paid').gte('payment_date', monthStart).lte('payment_date', monthEnd),
             supabase.from('installments').select('customer_id').eq('status', 'late'),
-            supabase.from('customers').select('id, full_name, phone, village').eq('isDeleted', false),
+            supabase.from('customers').select('id, full_name, phone, village').eq('isdeleted', false),
           ]);
 
           const lateCustomerIds = new Set((late || []).map(i => i.customer_id));

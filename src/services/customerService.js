@@ -4,7 +4,7 @@ import demoData, { getNextDemoId } from '../demo/demoStore';
 
 export async function addCustomer(customerData) {
   if (!isSupabaseConfigured) {
-    const newCustomer = { id: getNextDemoId('cust'), ...customerData, isDeleted: false };
+    const newCustomer = { id: getNextDemoId('cust'), ...customerData, isdeleted: false };
     demoData.customers.push(newCustomer);
     return newCustomer;
   }
@@ -45,25 +45,25 @@ export async function updateCustomer(customerId, customerData) {
 export async function softDeleteCustomer(customerId) {
   if (!isSupabaseConfigured) {
     const idx = demoData.customers.findIndex(c => c.id === customerId);
-    if (idx >= 0) demoData.customers[idx].isDeleted = true;
+    if (idx >= 0) demoData.customers[idx].isdeleted = true;
     return;
   }
   const { error } = await supabase
     .from('customers')
-    .update({ isDeleted: true, updated_at: new Date().toISOString() })
+    .update({ isdeleted: true, updated_at: new Date().toISOString() })
     .eq('id', customerId);
   if (error) throw error;
 }
 
 export async function getCustomer(customerId) {
   if (!isSupabaseConfigured) {
-    return demoData.customers.find(c => c.id === customerId && !c.isDeleted) || null;
+    return demoData.customers.find(c => c.id === customerId && !c.isdeleted) || null;
   }
   const { data, error } = await supabase
     .from('customers')
     .select('*')
     .eq('id', customerId)
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -71,12 +71,12 @@ export async function getCustomer(customerId) {
 
 export async function getAllCustomers() {
   if (!isSupabaseConfigured) {
-    return demoData.customers.filter(c => !c.isDeleted);
+    return demoData.customers.filter(c => !c.isdeleted);
   }
   const { data, error } = await supabase
     .from('customers')
     .select('*')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -85,7 +85,7 @@ export async function getAllCustomers() {
 export async function getUniqueVillages() {
   if (!isSupabaseConfigured) {
     const villages = new Set();
-    demoData.customers.filter(c => !c.isDeleted).forEach(c => {
+    demoData.customers.filter(c => !c.isdeleted).forEach(c => {
       if (c.village) villages.add(c.village);
     });
     return Array.from(villages).sort();
@@ -93,7 +93,7 @@ export async function getUniqueVillages() {
   const { data, error } = await supabase
     .from('customers')
     .select('village')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .not('village', 'is', null);
   if (error) throw error;
   const villages = [...new Set((data || []).map(r => r.village).filter(Boolean))];
@@ -104,7 +104,7 @@ export async function findPotentialDuplicates(phoneNumber) {
   if (!isSupabaseConfigured) {
     const similarPhone = phoneNumber.slice(-7);
     return demoData.customers.filter(c => {
-      if (c.isDeleted) return false;
+      if (c.isdeleted) return false;
       if (!c.phone) return false;
       return c.phone.slice(-7) === similarPhone;
     });
@@ -113,7 +113,7 @@ export async function findPotentialDuplicates(phoneNumber) {
   const { data, error } = await supabase
     .from('customers')
     .select('*')
-    .eq('isDeleted', false);
+    .eq('isdeleted', false);
   if (error) throw error;
   return (data || []).filter(c => c.phone && c.phone.slice(-7) === similarPhone);
 }

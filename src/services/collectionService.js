@@ -11,7 +11,7 @@ export async function fetchInstallmentsForCollection(village, month, year) {
       return d.getMonth() === month && d.getFullYear() === year;
     }).filter(inst => {
       if (!village) return true;
-      const customer = demoData.customers.find(c => c.id === inst.customer_id && !c.isDeleted);
+      const customer = demoData.customers.find(c => c.id === inst.customer_id && !c.isdeleted);
       return customer && customer.village === village;
     });
   }
@@ -32,7 +32,7 @@ export async function fetchInstallmentsForCollection(village, month, year) {
     .from('customers')
     .select('id, village')
     .in('id', customerIds.length ? customerIds : ['none'])
-    .eq('isDeleted', false);
+    .eq('isdeleted', false);
 
   const customersMap = {};
   (customers || []).forEach(c => { customersMap[c.id] = c; });
@@ -246,7 +246,7 @@ export async function markInstallmentAsLate(installmentId) {
 export async function getAllVillages() {
   if (!isSupabaseConfigured) {
     const villages = new Set();
-    demoData.customers.filter(c => !c.isDeleted).forEach(c => {
+    demoData.customers.filter(c => !c.isdeleted).forEach(c => {
       if (c.village) villages.add(c.village);
     });
     return Array.from(villages).sort();
@@ -254,7 +254,7 @@ export async function getAllVillages() {
   const { data, error } = await supabase
     .from('customers')
     .select('village')
-    .eq('isDeleted', false)
+    .eq('isdeleted', false)
     .not('village', 'is', null);
   if (error) throw error;
   const villages = [...new Set((data || []).map(r => r.village).filter(Boolean))];
