@@ -111,7 +111,7 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
 
 export async function getCustomerReceipts(customerId, customer, contracts) {
   const contractsMap = {};
-  contracts.forEach(c => { contractsMap[c.id] = c; });
+  (contracts || []).forEach(c => { contractsMap[c.id] = c; });
   const enrich = (r) => ({
     ...r,
     customer: { full_name: customer.full_name || '', phone: customer.phone || '', village: customer.village || '', address: customer.address || '' },
@@ -130,22 +130,24 @@ export async function getCustomerReceipts(customerId, customer, contracts) {
     return receipts.map(enrich);
   }
 
-  const { data: paidInsts } = await supabase
+  const { data: paidInsts, error: instError } = await supabase
     .from('installments')
     .select('*')
     .eq('customer_id', customerId)
     .in('status', ['paid', 'partial']);
+  if (instError) throw instError;
 
   const withoutReceipt = (paidInsts || []).filter(i => !i.receipt_id);
   if (withoutReceipt.length > 0) {
     await generateReceipts(withoutReceipt, { [customerId]: customer }, contractsMap);
   }
 
-  const { data: receipts } = await supabase
+  const { data: receipts, error: receiptError } = await supabase
     .from('receipts')
     .select('*')
     .eq('customer_id', customerId)
     .order('issue_date', { ascending: false });
+  if (receiptError) throw receiptError;
 
   return (receipts || []).map(enrich);
 }

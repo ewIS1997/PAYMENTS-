@@ -61,7 +61,8 @@ export default function DashboardPage() {
             supabase.from('customers').select('id, full_name, phone, village').eq('isdeleted', false),
           ]);
 
-          const lateCustomerIds = new Set((late || []).map(i => i.customer_id));
+          const activeCustomerIds = new Set((customers || []).map(c => c.id));
+          const lateCustomerIds = new Set((late || []).filter(i => activeCustomerIds.has(i.customer_id)).map(i => i.customer_id));
           let collected = 0;
           (paid || []).forEach(i => { collected += i.amount || 0; });
 

@@ -25,6 +25,7 @@ export default function CustomerDetailPage() {
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -122,13 +123,14 @@ export default function CustomerDetailPage() {
   }
 
   const handleDeleteCustomer = async () => {
+    setDeleteError(null);
     setDeleting(true);
     try {
       await softDeleteCustomer(id);
       navigate('/customers');
     } catch (err) {
       console.error('Error deleting customer:', err);
-      setError('حدث خطأ أثناء حذف العميل');
+      setDeleteError('حدث خطأ أثناء حذف العميل');
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);

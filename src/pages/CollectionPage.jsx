@@ -63,6 +63,7 @@ export default function CollectionPage() {
   const [receiptSearch, setReceiptSearch] = useState('');
   const [receiptsLoading, setReceiptsLoading] = useState(false);
   const [receiptsSearched, setReceiptsSearched] = useState(false);
+  const searchRef = useRef(0);
 
   const toastTimerRef = useRef(null);
   const [toast, setToast] = useState(null);
@@ -165,6 +166,7 @@ export default function CollectionPage() {
   }, [receiptGroups, receiptSearch]);
 
   const handleSearch = async () => {
+    const searchId = ++searchRef.current;
     setLoading(true);
     setSearched(true);
     setSelectedIds(new Set());
@@ -176,6 +178,7 @@ export default function CollectionPage() {
     clearToastTimer();
     try {
       const results = await fetchInstallmentsForCollection(selectedVillage, selectedMonth, selectedYear);
+      if (searchId !== searchRef.current) return;
       setInstallments(results);
 
       const cMap = {};

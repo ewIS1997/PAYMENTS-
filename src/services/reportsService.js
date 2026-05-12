@@ -133,7 +133,8 @@ export async function fetchLateCustomers() {
   const { data: custs } = await supabase
     .from('customers')
     .select('id, full_name, phone, village')
-    .in('id', customerIds.length ? customerIds : ['none']);
+    .in('id', customerIds.length ? customerIds : ['none'])
+    .eq('isdeleted', false);
   const custMap = {};
   (custs || []).forEach(c => { custMap[c.id] = c; });
   return customerIds.map(cid => {

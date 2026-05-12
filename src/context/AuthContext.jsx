@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { isSupabaseConfigured, enableSupabaseMode } from '../supabase/mode';
 import { seedInitialData } from '../supabase/seed';
 
@@ -12,26 +12,29 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function init() {
-      const hasSupabaseUrl = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (hasSupabaseUrl) {
-        enableSupabaseMode();
-        await seedInitialData();
-      }
-
-      const savedUser = localStorage.getItem(STORAGE_KEY);
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (e) {
-          localStorage.removeItem(STORAGE_KEY);
+      try {
+        const hasSupabaseUrl = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+        if (hasSupabaseUrl) {
+          enableSupabaseMode();
+          try { await seedInitialData(); } catch (e) { console.error('Seed failed:', e); }
         }
+
+        const savedUser = localStorage.getItem(STORAGE_KEY);
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch (e) {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     init();
   }, []);
 
-  const localLogin = (localUser) => {
+  const localLogin = useCallback((localUser) => {
     const userData = {
       uid: localUser.uid,
       email: localUser.email,
@@ -41,15 +44,17 @@ export function AuthProvider({ children }) {
     };
     setUser(userData);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
-  };
+  }, []);
+
+  const value = useMemo(() => ({ user, loading, logout, localLogin }), [user, loading, logout, localLogin]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, localLogin }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

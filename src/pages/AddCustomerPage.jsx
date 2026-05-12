@@ -154,6 +154,10 @@ export default function AddCustomerPage() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
+                      if (file.size > 2 * 1024 * 1024) {
+                        alert('حجم الصورة يجب أن يكون أقل من 2 ميجابايت');
+                        return;
+                      }
                       const reader = new FileReader();
                       reader.onloadend = () => {
                         setFormData(prev => ({ ...prev, photo: reader.result }));

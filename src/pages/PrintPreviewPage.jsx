@@ -13,7 +13,9 @@ export default function PrintPreviewPage() {
   const location = useLocation();
   const locationReceipts = location.state?.receipts;
   const hasReceipts = Boolean(locationReceipts && locationReceipts.length > 0);
-  const receiptsRef = useRef(locationReceipts || JSON.parse(sessionStorage.getItem(PRINT_RECEIPTS_KEY) || 'null'));
+  let storedReceipts = null;
+  try { storedReceipts = JSON.parse(sessionStorage.getItem(PRINT_RECEIPTS_KEY) || 'null'); } catch (e) { storedReceipts = null; }
+  const receiptsRef = useRef(locationReceipts || storedReceipts);
   const [settings, setSettings] = useState(null);
   const [fullData, setFullData] = useState([]);
   const [loading, setLoading] = useState(true);

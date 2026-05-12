@@ -1,25 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { getAllCustomers, searchCustomers } from '../services/customerService';
+import { useState, useEffect, useCallback } from 'react';
+import { getAllCustomers } from '../services/customerService';
 
 export function useCustomers() {
   const [customers, setCustomers] = useState([]);
   const [villages, setVillages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const prevIdsRef = useRef('');
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const customersData = await getAllCustomers();
-
-      const newIds = customersData.map(c => c.id).sort().join(',');
-      if (prevIdsRef.current === newIds) {
-        setLoading(false);
-        return;
-      }
-      prevIdsRef.current = newIds;
-
+      const customersData = (await getAllCustomers()) || [];
       setCustomers(customersData);
 
       const villageSet = new Set();
