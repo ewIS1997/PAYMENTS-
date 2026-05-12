@@ -66,6 +66,7 @@ export async function bulkMarkInstallmentsAsPaid(installmentIds) {
     }
     return count;
   }
+  if (!installmentIds || installmentIds.length === 0) return 0;
   const now = new Date().toISOString();
   const { error } = await supabase
     .from('installments')
@@ -117,10 +118,12 @@ export async function undoMarkInstallmentAsPaid(installmentId) {
   const carryover = inst.carryover_from_partial || 0;
   const now = new Date().toISOString();
 
-  await supabase
+  const { error: undoError } = await supabase
     .from('installments')
     .update({ status: 'pending', payment_date: null, paid_amount: null, carryover_from_partial: null, updated_at: now })
-    .eq('id', installmentId);
+    .eq('id', installmentId)
+    .eq('updated_at', inst.updated_at);
+  if (undoError) throw undoError;
 
   if (carryover > 0) {
     const { data: nextInsts } = await supabase
@@ -137,11 +140,9 @@ export async function undoMarkInstallmentAsPaid(installmentId) {
       const next = nextInsts[0];
       const existingCO = next.carryover_from_partial || 0;
       const newAmount = (next.amount || 0) - carryover;
-      if (existingCO > carryover) {
-        await supabase.from('installments').update({ amount: newAmount, carryover_from_partial: existingCO - carryover }).eq('id', next.id);
-      } else {
-        await supabase.from('installments').update({ amount: newAmount, carryover_from_partial: null }).eq('id', next.id);
-      }
+      const coUpdate = existingCO > carryover ? { amount: newAmount, carryover_from_partial: existingCO - carryover, updated_at: now } : { amount: newAmount, carryover_from_partial: null, updated_at: now };
+      const { error: coError } = await supabase.from('installments').update(coUpdate).eq('id', next.id).eq('updated_at', next.updated_at);
+      if (coError) console.error('Carryover undo failed:', coError);
     }
   }
 }
@@ -180,13 +181,17 @@ export async function recordPartialPayment(installmentId, paidAmount) {
     .single();
   if (!inst) return;
 
+  if (paidAmount > (inst.amount || 0)) throw new Error('المبلغ المدفوع أكبر من المبلغ المطلوب');
+
   const remaining = (inst.amount || 0) - paidAmount;
   const now = new Date().toISOString();
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('installments')
     .update({ paid_amount: paidAmount, status: 'partial', payment_date: now, updated_at: now })
-    .eq('id', installmentId);
+    .eq('id', installmentId)
+    .eq('updated_at', inst.updated_at);
+  if (updateError) throw updateError;
 
   if (remaining > 0) {
     const { data: nextInsts } = await supabase
@@ -202,13 +207,16 @@ export async function recordPartialPayment(installmentId, paidAmount) {
     if (nextInsts && nextInsts.length > 0) {
       const next = nextInsts[0];
       const existingCarryover = next.carryover_from_partial || 0;
-      await supabase
+      const { error: carryError } = await supabase
         .from('installments')
         .update({
           amount: (next.amount || 0) + remaining,
           carryover_from_partial: existingCarryover + remaining,
+          updated_at: now,
         })
-        .eq('id', next.id);
+        .eq('id', next.id)
+        .eq('updated_at', next.updated_at);
+      if (carryError) console.error('Carryover update failed:', carryError);
     }
   }
 }
@@ -242,6 +250,64 @@ export async function markInstallmentAsLate(installmentId) {
     .update({ status: 'late', updated_at: new Date().toISOString() })
     .eq('id', installmentId);
   if (error) throw error;
+}
+
+export async function fetchReceiptsGrouped(village, month, year) {
+  if (!isSupabaseConfigured) {
+    let receipts = demoData.receipts;
+    if (month != null && year != null) {
+      receipts = receipts.filter(r => r.month === month && r.year === year);
+    }
+    if (village) {
+      receipts = receipts.filter(r => {
+        const cust = demoData.customers.find(c => c.id === r.customer_id && !c.isdeleted);
+        return cust && cust.village === village;
+      });
+    }
+    const groups = {};
+    receipts.forEach(r => {
+      if (!groups[r.customer_id]) {
+        const cust = demoData.customers.find(c => c.id === r.customer_id);
+        groups[r.customer_id] = { customer: cust || {}, receipts: [] };
+      }
+      groups[r.customer_id].receipts.push(r);
+    });
+    return Object.values(groups);
+  }
+
+  let query = supabase.from('receipts').select('*');
+  if (month != null && year != null) {
+    query = query.eq('month', month).eq('year', year);
+  }
+  const { data: receipts, error } = await query.order('issue_date', { ascending: false });
+  if (error) throw error;
+
+  const customerIds = [...new Set((receipts || []).map(r => r.customer_id))];
+  const { data: customers } = await supabase
+    .from('customers')
+    .select('id, full_name, phone, village')
+    .in('id', customerIds.length ? customerIds : ['none'])
+    .eq('isdeleted', false);
+
+  const custMap = {};
+  (customers || []).forEach(c => { custMap[c.id] = c; });
+
+  let filtered = receipts || [];
+  if (village) {
+    filtered = filtered.filter(r => {
+      const c = custMap[r.customer_id];
+      return c && c.village === village;
+    });
+  }
+
+  const groups = {};
+  filtered.forEach(r => {
+    if (!groups[r.customer_id]) {
+      groups[r.customer_id] = { customer: custMap[r.customer_id] || {}, receipts: [] };
+    }
+    groups[r.customer_id].receipts.push(r);
+  });
+  return Object.values(groups);
 }
 
 export async function getAllVillages() {

@@ -34,7 +34,17 @@ export async function updateCustomer(customerId, customerData) {
   }
   const { data, error } = await supabase
     .from('customers')
-    .update({ ...customerData, updated_at: new Date().toISOString() })
+    .update({
+      full_name: customerData.full_name,
+      phone: customerData.phone,
+      second_phone: customerData.second_phone || '',
+      village: customerData.village,
+      national_id: customerData.national_id || '',
+      address: customerData.address || '',
+      notes: customerData.notes || '',
+      photo: customerData.photo || '',
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', customerId)
     .select()
     .single();

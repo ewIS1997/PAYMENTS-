@@ -6,10 +6,15 @@ import ConfirmationDialog from '../components/ConfirmationDialog';
 import EmptyState from '../components/EmptyState';
 import Toast from '../components/Toast';
 import { supabase } from '../supabase/client';
-import { fetchInstallmentsForCollection, markInstallmentAsPaid, markInstallmentAsLate, bulkMarkInstallmentsAsPaid, undoMarkInstallmentAsPaid, recordPartialPayment, getAllVillages, getCustomerPaymentHistory } from '../services/collectionService';
+import { fetchInstallmentsForCollection, markInstallmentAsPaid, markInstallmentAsLate, bulkMarkInstallmentsAsPaid, undoMarkInstallmentAsPaid, recordPartialPayment, getAllVillages, getCustomerPaymentHistory, fetchReceiptsGrouped } from '../services/collectionService';
 import { generateReceipts } from '../services/receiptService';
 import { formatCurrency } from '../utils/currencyUtils';
 import { getArabicMonthName } from '../utils/dateUtils';
+
+const PAGE_TABS = [
+  { key: 'collection', label: 'التحصيل' },
+  { key: 'receipts', label: 'الإيصالات' },
+];
 
 const FILTER_TABS = [
   { key: 'all', label: 'الكل' },
@@ -53,6 +58,11 @@ export default function CollectionPage() {
   const [paymentHistoryModal, setPaymentHistoryModal] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [paymentHistoryLoading, setPaymentHistoryLoading] = useState(false);
+  const [pageTab, setPageTab] = useState('collection');
+  const [receiptGroups, setReceiptGroups] = useState([]);
+  const [receiptSearch, setReceiptSearch] = useState('');
+  const [receiptsLoading, setReceiptsLoading] = useState(false);
+  const [receiptsSearched, setReceiptsSearched] = useState(false);
 
   const toastTimerRef = useRef(null);
   const [toast, setToast] = useState(null);
@@ -110,6 +120,49 @@ export default function CollectionPage() {
     setToast(null);
     clearToastTimer();
   }, [clearToastTimer]);
+
+  const handleReceiptSearch = async () => {
+    setReceiptsLoading(true);
+    setReceiptsSearched(true);
+    setReceiptSearch('');
+    try {
+      const groups = await fetchReceiptsGrouped(selectedVillage, selectedMonth, selectedYear);
+      setReceiptGroups(groups);
+    } catch (err) {
+      console.error('Error fetching receipts:', err);
+    } finally {
+      setReceiptsLoading(false);
+    }
+  };
+
+  const handleReprintReceipt = (receipt, group) => {
+    const receiptWithCustomer = {
+      ...receipt,
+      customer: { full_name: group.customer.full_name || '', phone: group.customer.phone || '', village: group.customer.village || '', address: group.customer.address || '' },
+    };
+    navigate('/print', { state: { receipts: [receiptWithCustomer] } });
+  };
+
+  const handleReprintAllForCustomer = (group) => {
+    const receipts = group.receipts.map(r => ({
+      ...r,
+      customer: { full_name: group.customer.full_name || '', phone: group.customer.phone || '', village: group.customer.village || '', address: group.customer.address || '' },
+    }));
+    navigate('/print', { state: { receipts } });
+  };
+
+  const filteredReceiptGroups = useMemo(() => {
+    if (!receiptSearch.trim()) return receiptGroups;
+    const q = receiptSearch.trim().toLowerCase();
+    return receiptGroups.filter(g => {
+      const name = (g.customer.full_name || '').toLowerCase();
+      const phone = (g.customer.phone || '').toLowerCase();
+      const hasMatchingReceipt = g.receipts.some(r =>
+        (r.receipt_number || '').toLowerCase().includes(q) || (r.customer_name || '').toLowerCase().includes(q)
+      );
+      return name.includes(q) || phone.includes(q) || hasMatchingReceipt;
+    });
+  }, [receiptGroups, receiptSearch]);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -495,12 +548,28 @@ export default function CollectionPage() {
 
   return (
     <AppShell>
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 dark:text-white mb-6">التحصيل</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 dark:text-white mb-4">التحصيل</h1>
+
+      <div className="flex gap-2 mb-6">
+        {PAGE_TABS.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setPageTab(tab.key)}
+            className={`px-6 py-2.5 rounded-lg text-lg font-semibold transition-colors min-h-[44px] ${
+              pageTab === tab.key
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">المدينة</label>
+            <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-1">المدينة</label>
             <select
               value={selectedVillage}
               onChange={(e) => setSelectedVillage(e.target.value)}
@@ -518,14 +587,14 @@ export default function CollectionPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSelectedMonth(prev => prev === 0 ? 11 : prev - 1)}
-                className="px-3 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="px-3 py-3 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 →
               </button>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="flex-1 px-3 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="flex-1 px-3 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 {monthNames.map((name, idx) => (
                   <option key={idx} value={idx}>{name}</option>
@@ -533,7 +602,7 @@ export default function CollectionPage() {
               </select>
               <button
                 onClick={() => setSelectedMonth(prev => prev === 11 ? 0 : prev + 1)}
-                className="px-3 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="px-3 py-3 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 ←
               </button>
@@ -545,14 +614,14 @@ export default function CollectionPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setSelectedYear(prev => prev - 1)}
-                className="px-3 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="px-3 py-3 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 →
               </button>
               <span className="flex-1 text-center text-xl font-semibold py-3">{selectedYear}</span>
               <button
                 onClick={() => setSelectedYear(prev => prev + 1)}
-                className="px-3 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="px-3 py-3 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 text-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 ←
               </button>
@@ -561,15 +630,15 @@ export default function CollectionPage() {
         </div>
 
         <button
-          onClick={handleSearch}
-          disabled={loading}
+          onClick={pageTab === 'collection' ? handleSearch : handleReceiptSearch}
+          disabled={loading || receiptsLoading}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xl font-semibold py-3 rounded-lg transition-colors min-h-[44px]"
         >
-          {loading ? 'جاري البحث...' : 'بحث'}
+          {loading || receiptsLoading ? 'جاري البحث...' : 'بحث'}
         </button>
       </div>
 
-      {searchError && (
+      {pageTab === 'collection' && searchError && (
         <div className="bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-lg mb-4 flex items-center justify-between">
           <span>{searchError}</span>
           <button onClick={handleSearch} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-base font-semibold min-h-[44px]">
@@ -578,14 +647,14 @@ export default function CollectionPage() {
         </div>
       )}
 
-      {searched && installments.length === 0 && !loading && !searchError && (
+      {pageTab === 'collection' && searched && installments.length === 0 && !loading && !searchError && (
         <EmptyState
           icon="✅"
           message="لا توجد أقساط مستحقة لهذا الشهر"
         />
       )}
 
-      {searched && installments.length > 0 && filteredGroups.length === 0 && !loading && (
+      {pageTab === 'collection' && searched && installments.length > 0 && filteredGroups.length === 0 && !loading && (
         <EmptyState
           icon="🔍"
           message={
@@ -599,7 +668,7 @@ export default function CollectionPage() {
       )}
 
       {/* Just paid banner */}
-      {justPaidIds.size > 0 && (
+      {pageTab === 'collection' && justPaidIds.size > 0 && (
         <div className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-lg text-lg mb-4 flex items-center justify-between">
           <span>
             تم دفع <strong>{justPaidIds.size}</strong>{' '}
@@ -615,8 +684,8 @@ export default function CollectionPage() {
         </div>
       )}
 
-      {installments.length > 0 && filteredGroups.length > 0 && (
-        <>
+      {pageTab === 'collection' && installments.length > 0 && filteredGroups.length > 0 && (
+        <div>
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-4">
             <div className="flex gap-2">
               <input
@@ -872,21 +941,21 @@ export default function CollectionPage() {
                                 className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-base font-semibold transition-colors min-h-[44px] disabled:opacity-50"
                               >
                                 متأخر
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
+                               </button>
+                             </div>
+                           </div>
+                         );
+                       })}
+                     </div>
+                   )}
+                 </div>
+               );
+             })}
+           </div>
+        </div>
       )}
 
-      {selectedIds.size > 0 && (
+      {pageTab === 'collection' && selectedIds.size > 0 && (
         <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:bottom-8 md:w-96 bg-gray-900 text-white rounded-xl p-4 z-40 shadow-lg">
           <div className="flex justify-between items-center mb-3">
             <span className="text-lg">{selectedIds.size} قسط محدد</span>
@@ -920,23 +989,27 @@ export default function CollectionPage() {
         />
       )}
 
-      <ConfirmationDialog
-        isOpen={!!confirmPaid}
-        title="تأكيد الدفع"
-        message={confirmPaid ? `هل تريد تأكيد دفع ${formatCurrency(confirmPaid.amount)} للعميل ${customersMap[confirmPaid.customer_id]?.full_name || '...'}` : ''}
-        onConfirm={() => confirmPaid && handleMarkPaid(confirmPaid)}
-        onCancel={() => setConfirmPaid(null)}
-      />
+      {pageTab === 'collection' && (
+        <ConfirmationDialog
+          isOpen={!!confirmPaid}
+          title="تأكيد الدفع"
+          message={confirmPaid ? `هل تريد تأكيد دفع ${formatCurrency(confirmPaid.amount)} للعميل ${customersMap[confirmPaid.customer_id]?.full_name || '...'}` : ''}
+          onConfirm={() => confirmPaid && handleMarkPaid(confirmPaid)}
+          onCancel={() => setConfirmPaid(null)}
+        />
+      )}
 
-      <ConfirmationDialog
-        isOpen={confirmBulkPaid}
-        title="تأكيد الدفع الجماعي"
-        message={`هل تريد تأكيد دفع ${selectedIds.size} قسط بقيمة إجمالية ${formatCurrency(selectedTotal)}؟`}
-        onConfirm={handleBulkMarkPaid}
-        onCancel={() => setConfirmBulkPaid(false)}
-      />
+      {pageTab === 'collection' && (
+        <ConfirmationDialog
+          isOpen={confirmBulkPaid}
+          title="تأكيد الدفع الجماعي"
+          message={`هل تريد تأكيد دفع ${selectedIds.size} قسط بقيمة إجمالية ${formatCurrency(selectedTotal)}؟`}
+          onConfirm={handleBulkMarkPaid}
+          onCancel={() => setConfirmBulkPaid(false)}
+        />
+      )}
 
-      {partialPaymentModal && (
+      {pageTab === 'collection' && partialPaymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setPartialPaymentModal(null)}>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">دفع جزئي</h3>
@@ -984,6 +1057,71 @@ export default function CollectionPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {pageTab === 'receipts' && (
+        <>
+          {receiptsSearched && receiptGroups.length === 0 && !receiptsLoading && (
+            <EmptyState icon="📄" message="لا توجد إيصالات لهذا الشهر" />
+          )}
+
+          {receiptGroups.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-4">
+              <input
+                type="text"
+                value={receiptSearch}
+                onChange={(e) => setReceiptSearch(e.target.value)}
+                placeholder="ابحث برقم الإيصال أو اسم العميل أو رقم الهاتف..."
+                className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                dir="rtl"
+              />
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {filteredReceiptGroups.map(group => (
+              <div key={group.customer.id || group.customer.full_name} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{group.customer.full_name || '-'}</h3>
+                    <div className="flex gap-3 text-base text-gray-500 dark:text-gray-400 mt-1">
+                      {group.customer.phone && <span dir="ltr">{group.customer.phone}</span>}
+                      {group.customer.village && <span>{group.customer.village}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{group.receipts.length} إيصال</span>
+                    <button
+                      onClick={() => handleReprintAllForCustomer(group)}
+                      className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-base font-semibold transition-colors min-h-[44px]"
+                    >
+                      طباعة الكل
+                    </button>
+                  </div>
+                </div>
+                <div className="border-t border-gray-100">
+                  {group.receipts.map(r => (
+                    <div key={r.id} className="px-4 py-3 border-b border-gray-50 last:border-b-0 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="bg-blue-100 text-blue-700 text-sm font-bold px-2.5 py-1 rounded-lg">{r.receipt_number}</span>
+                        <span className="text-base text-gray-700 dark:text-gray-300">{getArabicMonthName(r.month)} {r.year}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-bold text-green-600">{formatCurrency(r.amount)}</span>
+                        <button
+                          onClick={() => handleReprintReceipt(r, group)}
+                          className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-base font-semibold transition-colors min-h-[44px]"
+                        >
+                          إعادة طباعة
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {paymentHistoryModal && (

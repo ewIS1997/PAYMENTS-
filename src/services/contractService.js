@@ -3,6 +3,7 @@ import { supabase } from '../supabase/client';
 import demoData, { getNextDemoId } from '../demo/demoStore';
 import { generateInstallments } from '../utils/installmentUtils';
 import { formatLocalDateString, parseLocalDate } from '../utils/dateUtils';
+import { generateReceipts } from './receiptService';
 
 export async function addContractWithInstallments(contractData, customer) {
   const start = new Date(contractData.start_date);
@@ -30,10 +31,18 @@ export async function addContractWithInstallments(contractData, customer) {
     const total = Number(contractData.total_amount);
     const monthly = Number(contractData.monthly_amount);
     const installments = generateInstallments(id, customer.id, start, total, monthly, months);
+    const instsWithIds = [];
     installments.forEach(inst => {
       const instId = getNextDemoId('inst');
-      demoData.installments.push({ id: instId, ...inst });
+      const newInst = { id: instId, ...inst };
+      demoData.installments.push(newInst);
+      instsWithIds.push(newInst);
     });
+    if (instsWithIds.length > 0) {
+      const customersMap = { [customer.id]: customer };
+      const contractsMap = { [id]: newContract };
+      await generateReceipts(instsWithIds, customersMap, contractsMap);
+    }
     return newContract;
   }
 
@@ -57,8 +66,14 @@ export async function addContractWithInstallments(contractData, customer) {
     receipt_id: null,
   }));
 
-  const { error: instError } = await supabase.from('installments').insert(dbInsts);
+  const { data: insertedInsts, error: instError } = await supabase.from('installments').insert(dbInsts).select();
   if (instError) throw instError;
+
+  if (insertedInsts && insertedInsts.length > 0) {
+    const customersMap = { [customer.id]: customer };
+    const contractsMap = { [contract.id]: contract };
+    await generateReceipts(insertedInsts, customersMap, contractsMap);
+  }
 
   return contract;
 }
@@ -135,7 +150,7 @@ export async function updateInstallmentStatus(installmentId, status, paymentDate
     return;
   }
   const updates = { status, updated_at: new Date().toISOString() };
-  if (paymentDate) updates.payment_date = paymentDate.toISOString();
+  if (paymentDate) updates.payment_date = formatLocalDateString(paymentDate);
   const { error } = await supabase
     .from('installments')
     .update(updates)

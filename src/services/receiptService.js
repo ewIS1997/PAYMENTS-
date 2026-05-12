@@ -51,24 +51,15 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
     return { alreadyReceipted, generated, receiptIds: generated.map(r => r.id) };
   }
 
-  const { data: settings } = await supabase
-    .from('settings')
-    .select('*')
-    .eq('id', 'app_settings')
-    .single();
+  const { data: counter, error: rpcError } = await supabase
+    .rpc('increment_receipt_counter', { count });
 
-  if (!settings) throw new Error('Settings not found');
+  if (rpcError) throw rpcError;
+  if (!counter) throw new Error('Failed to increment receipt counter');
 
-  let lastNumber = settings.last_receipt_number || 0;
-  let receiptYear = settings.receipt_year || today.getFullYear();
-  const prefix = settings.receipt_prefix || 'RCPT';
-
-  if (receiptYear !== today.getFullYear()) {
-    lastNumber = 0;
-    receiptYear = today.getFullYear();
-  }
-
-  lastNumber += count;
+  const lastNumber = counter.last_number;
+  const receiptYear = counter.receipt_year;
+  const prefix = counter.receipt_prefix;
   const receiptDocs = toGenerate.map((inst, i) => {
     const seq = lastNumber - count + i + 1;
     const dueDate = inst.due_date?.toDate?.() || inst.due_date;
@@ -93,15 +84,14 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
   if (insertError) throw insertError;
 
   const now = new Date().toISOString();
-  for (const receipt of newReceipts) {
-    const installment = toGenerate.find(inst => inst.id === receipt.installment_id);
-    const customer = customersMap?.[installment?.customer_id] || {};
-    const contract = contractsMap?.[installment?.contract_id] || {};
+  const receiptInstallmentMap = {};
+  newReceipts.forEach(r => { receiptInstallmentMap[r.id] = r.installment_id; });
 
+  for (const [receiptId, installmentId] of Object.entries(receiptInstallmentMap)) {
     await supabase
       .from('installments')
-      .update({ receipt_id: receipt.id, updated_at: now })
-      .eq('id', receipt.installment_id);
+      .update({ receipt_id: receiptId, updated_at: now })
+      .eq('id', installmentId);
   }
 
   const newReceiptIds = newReceipts.map(r => r.id);
@@ -116,24 +106,39 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
     };
   });
 
-  await supabase
-    .from('settings')
-    .update({ last_receipt_number: lastNumber, receipt_year: receiptYear })
-    .eq('id', 'app_settings');
-
   return { alreadyReceipted, generated: enriched, receiptIds: newReceiptIds };
 }
 
 export async function getCustomerReceipts(customerId, customer, contracts) {
+  const contractsMap = {};
+  contracts.forEach(c => { contractsMap[c.id] = c; });
+  const enrich = (r) => ({
+    ...r,
+    customer: { full_name: customer.full_name || '', phone: customer.phone || '', village: customer.village || '', address: customer.address || '' },
+    contract: contractsMap[r.contract_id] ? { product_name: contractsMap[r.contract_id].product_name } : null,
+  });
+
   if (!isSupabaseConfigured) {
+    const paidInsts = demoData.installments.filter(i =>
+      i.customer_id === customerId && (i.status === 'paid' || i.status === 'partial')
+    );
+    const withoutReceipt = paidInsts.filter(i => !i.receipt_id);
+    if (withoutReceipt.length > 0) {
+      await generateReceipts(withoutReceipt, { [customerId]: customer }, contractsMap);
+    }
     const receipts = demoData.receipts.filter(r => r.customer_id === customerId);
-    const contractsMap = {};
-    contracts.forEach(c => { contractsMap[c.id] = c; });
-    return receipts.map(r => ({
-      ...r,
-      customer: { ...customer },
-      contract: contractsMap[r.contract_id] ? { product_name: contractsMap[r.contract_id].product_name } : null,
-    }));
+    return receipts.map(enrich);
+  }
+
+  const { data: paidInsts } = await supabase
+    .from('installments')
+    .select('*')
+    .eq('customer_id', customerId)
+    .in('status', ['paid', 'partial']);
+
+  const withoutReceipt = (paidInsts || []).filter(i => !i.receipt_id);
+  if (withoutReceipt.length > 0) {
+    await generateReceipts(withoutReceipt, { [customerId]: customer }, contractsMap);
   }
 
   const { data: receipts } = await supabase
@@ -142,14 +147,7 @@ export async function getCustomerReceipts(customerId, customer, contracts) {
     .eq('customer_id', customerId)
     .order('issue_date', { ascending: false });
 
-  const contractsMap = {};
-  contracts.forEach(c => { contractsMap[c.id] = c; });
-
-  return (receipts || []).map(r => ({
-    ...r,
-    customer: { ...customer },
-    contract: contractsMap[r.contract_id] ? { product_name: contractsMap[r.contract_id].product_name } : null,
-  }));
+  return (receipts || []).map(enrich);
 }
 
 export async function getReceiptsBySearch(searchTerm) {

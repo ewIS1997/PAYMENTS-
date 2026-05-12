@@ -154,7 +154,7 @@ export default function CustomerDetailPage() {
     try {
       const receipts = await getCustomerReceipts(id, customer, contracts);
       if (receipts.length === 0) {
-        alert('لا توجد إيصالات لهذا العميل');
+        alert('لا توجد أقساط مدفوعة لهذا العميل لإنشاء إيصالات');
         return;
       }
       navigate('/print', { state: { receipts } });
@@ -426,7 +426,7 @@ export default function CustomerDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setShowDuplicates(false)}>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">عملاء相似的 (قد يكونون مكررين)</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">عملاء مشابهين (قد يكونون مكررين)</h3>
               <button
                 onClick={() => setShowDuplicates(false)}
                 className="text-gray-400 hover:text-gray-600 text-2xl min-h-[44px] min-w-[44px] flex items-center justify-center"

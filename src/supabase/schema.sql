@@ -125,3 +125,33 @@ SELECT json_build_object(
     + COALESCE((SELECT SUM(amount - paid_amount) FROM installments WHERE status = 'partial'), 0)
 );
 $$;
+
+-- Atomic receipt counter increment (prevents race conditions)
+CREATE OR REPLACE FUNCTION increment_receipt_counter(count INT)
+RETURNS TABLE(last_number INT, receipt_year INT, receipt_prefix TEXT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_last INT;
+  v_year INT;
+  v_prefix TEXT;
+  v_current_year INT := EXTRACT(YEAR FROM NOW());
+BEGIN
+  SELECT last_receipt_number, receipt_year, receipt_prefix
+  INTO v_last, v_year, v_prefix
+  FROM settings WHERE id = 'app_settings';
+
+  IF v_year IS NULL OR v_year != v_current_year THEN
+    v_last := 0;
+    v_year := v_current_year;
+  END IF;
+
+  v_last := v_last + count;
+
+  UPDATE settings
+  SET last_receipt_number = v_last, receipt_year = v_year
+  WHERE id = 'app_settings';
+
+  RETURN QUERY SELECT v_last AS last_number, v_year AS receipt_year, COALESCE(v_prefix, 'RCPT') AS receipt_prefix;
+END;
+$$;
