@@ -46,5 +46,6 @@ export function toDateValue(field) {
   if (!field) return null;
   if (typeof field.toDate === 'function') return field.toDate();
   if (field instanceof Date) return field;
+  if (typeof field === 'string') return parseLocalDate(field);
   return null;
 }
