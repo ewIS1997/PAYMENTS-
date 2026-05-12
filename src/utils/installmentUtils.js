@@ -8,7 +8,7 @@ export function generateInstallments(contractId, customerId, startDate, totalAmo
     let amount;
     if (i === monthsCount - 1) {
       const paidSoFar = monthlyAmount * i;
-      amount = totalAmount - paidSoFar;
+      amount = Math.round((totalAmount - paidSoFar) * 100) / 100;
     } else {
       amount = monthlyAmount;
     }

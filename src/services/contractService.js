@@ -84,7 +84,7 @@ export async function getContract(contractId) {
   }
   const { data, error } = await supabase
     .from('contracts')
-    .select('*')
+    .select('id, customer_id, customer_name, product_name, total_amount, monthly_amount, months_count, start_date, end_date, status')
     .eq('id', contractId)
     .maybeSingle();
   if (error) throw error;
@@ -97,7 +97,7 @@ export async function getContractsByCustomerId(customerId) {
   }
   const { data, error } = await supabase
     .from('contracts')
-    .select('*')
+    .select('id, customer_id, customer_name, product_name, total_amount, monthly_amount, months_count, start_date, end_date, status')
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -110,7 +110,7 @@ export async function getInstallmentsByContractId(contractId) {
   }
   const { data, error } = await supabase
     .from('installments')
-    .select('*')
+    .select('id, contract_id, customer_id, due_date, amount, status, paid_amount, payment_date, receipt_id, carryover_from_partial')
     .eq('contract_id', contractId)
     .order('due_date', { ascending: true });
   if (error) throw error;
@@ -129,7 +129,7 @@ export async function getInstallmentsByCustomerId(customerId) {
   }
   const { data, error } = await supabase
     .from('installments')
-    .select('*')
+    .select('id, contract_id, customer_id, due_date, amount, status, paid_amount, payment_date, receipt_id, carryover_from_partial')
     .eq('customer_id', customerId)
     .order('due_date', { ascending: true });
   if (error) throw error;

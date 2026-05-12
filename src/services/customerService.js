@@ -133,6 +133,7 @@ export async function getUniqueVillages() {
 }
 
 export async function findPotentialDuplicates(phoneNumber) {
+  if (!phoneNumber) return [];
   if (!isSupabaseConfigured) {
     const similarPhone = phoneNumber.slice(-7);
     return demoData.customers.filter(c => {

@@ -26,7 +26,7 @@ export async function fetchMonthlyReport(month, year) {
 
   const { data: allDue } = await supabase
     .from('installments')
-    .select('*')
+    .select('status, amount, paid_amount')
     .gte('due_date', monthStart)
     .lte('due_date', monthEnd);
 

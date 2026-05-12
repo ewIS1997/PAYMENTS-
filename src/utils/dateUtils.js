@@ -3,6 +3,7 @@ export function formatArabicMonth(monthNumber, year) {
     'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
     'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
   ];
+  if (monthNumber < 0 || monthNumber > 11) return String(year);
   return `${months[monthNumber]} ${year}`;
 }
 
@@ -25,7 +26,9 @@ export function formatDateForDisplay(date) {
 }
 
 export function formatLocalDateString(date) {
+  if (!date) return '';
   const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return '';
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
