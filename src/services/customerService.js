@@ -75,9 +75,31 @@ export async function getAllCustomers() {
   }
   const { data, error } = await supabase
     .from('customers')
-    .select('*')
+    .select('id, full_name, phone, village, national_id, address, photo')
     .eq('isdeleted', false)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function searchCustomers(term) {
+  if (!isSupabaseConfigured) {
+    const lower = term.toLowerCase();
+    return demoData.customers.filter(c => {
+      if (c.isdeleted) return false;
+      return [c.full_name, c.phone, c.village, c.national_id, c.address]
+        .some(f => f && f.toLowerCase().includes(lower));
+    });
+  }
+  const like = `%${term.toLowerCase()}%`;
+  const { data, error } = await supabase
+    .from('customers')
+    .select('id, full_name, phone, village, national_id, address, photo')
+    .eq('isdeleted', false)
+    .or(`full_name.ilike.${like},phone.ilike.${like},village.ilike.${like},national_id.ilike.${like}`)
+    .order('created_at', { ascending: false })
+    .limit(50);
   if (error) throw error;
   return data || [];
 }

@@ -7,6 +7,7 @@ import ConfirmationDialog from '../components/ConfirmationDialog';
 import { IconPhone, IconPlus, IconTrash } from '../components/Icons';
 import { getCustomer, softDeleteCustomer, findPotentialDuplicates } from '../services/customerService';
 import { getContractsByCustomerId, getInstallmentsByCustomerId } from '../services/contractService';
+import { getCustomerReceipts } from '../services/receiptService';
 import { formatCurrency } from '../utils/currencyUtils';
 import { formatDateForDisplay, getArabicMonthName, toDateValue } from '../utils/dateUtils';
 
@@ -23,6 +24,7 @@ export default function CustomerDetailPage() {
   const [duplicates, setDuplicates] = useState([]);
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -147,6 +149,23 @@ export default function CustomerDetailPage() {
     }
   };
 
+  const handlePrintAllReceipts = async () => {
+    setPrinting(true);
+    try {
+      const receipts = await getCustomerReceipts(id, customer, contracts);
+      if (receipts.length === 0) {
+        alert('لا توجد إيصالات لهذا العميل');
+        return;
+      }
+      navigate('/print', { state: { receipts } });
+    } catch (err) {
+      console.error('Error fetching customer receipts:', err);
+      alert('حدث خطأ أثناء تحميل الإيصالات');
+    } finally {
+      setPrinting(false);
+    }
+  };
+
   const paidPercent = stats.totalCount > 0 ? Math.round((stats.paidCount / stats.totalCount) * 100) : 0;
 
   return (
@@ -170,6 +189,13 @@ export default function CustomerDetailPage() {
         >
           <IconTrash className="w-4 h-4" />
           حذف
+        </button>
+        <button
+          onClick={handlePrintAllReceipts}
+          disabled={printing}
+          className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-lg transition-colors flex items-center gap-2"
+        >
+          {printing ? '...' : 'طباعة كل الإيصالات'}
         </button>
         {customer.phone && (
           <button

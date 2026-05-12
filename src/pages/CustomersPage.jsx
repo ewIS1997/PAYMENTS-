@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppShell from '../components/AppShell';
 import CustomerCard from '../components/CustomerCard';
@@ -6,6 +6,7 @@ import AddCustomerModal from '../components/AddCustomerModal';
 import EmptyState from '../components/EmptyState';
 import { IconSearch, IconX, IconPlus } from '../components/Icons';
 import { useCustomers } from '../hooks/useCustomers';
+import { searchCustomers } from '../services/customerService';
 import { isSupabaseConfigured } from '../supabase/mode';
 import { supabase } from '../supabase/client';
 import demoData from '../demo/demoStore';
@@ -17,6 +18,9 @@ export default function CustomersPage() {
   const [selectedVillage, setSelectedVillage] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [customerStatuses, setCustomerStatuses] = useState({});
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const searchTimerRef = useRef(null);
 
   const existingPhones = useMemo(() => {
     const map = {};
@@ -26,10 +30,14 @@ export default function CustomersPage() {
     return map;
   }, [customers]);
 
+  const prevStatusIdsRef = useRef('');
+
   useEffect(() => {
     async function computeStatuses() {
+      const statuses = {};
+      const customerIds = customers.map(c => c.id);
+
       if (!isSupabaseConfigured) {
-        const statuses = {};
         customers.forEach(c => {
           const insts = demoData.installments.filter(i => i.customer_id === c.id);
           const hasLate = insts.some(i => i.status === 'late');
@@ -41,53 +49,62 @@ export default function CustomersPage() {
         setCustomerStatuses(statuses);
         return;
       }
-      if (isSupabaseConfigured) {
-        const statuses = {};
-        const customerIds = customers.map(c => c.id);
-        const { data: installments } = await supabase
-          .from('installments')
-          .select('customer_id, status')
-          .in('customer_id', customerIds.length ? customerIds : ['none']);
-        const grouped = {};
-        (installments || []).forEach(i => {
-          if (!grouped[i.customer_id]) grouped[i.customer_id] = [];
-          grouped[i.customer_id].push(i);
-        });
-        customers.forEach(c => {
-          const insts = grouped[c.id] || [];
-          const hasLate = insts.some(i => i.status === 'late');
-          const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
-          if (hasLate) statuses[c.id] = 'late';
-          else if (hasPending) statuses[c.id] = 'pending';
-          else statuses[c.id] = 'clear';
-        });
-        setCustomerStatuses(statuses);
-      }
+
+      const { data: installments } = await supabase
+        .from('installments')
+        .select('customer_id, status')
+        .in('customer_id', customerIds.length ? customerIds : ['none']);
+      const grouped = {};
+      (installments || []).forEach(i => {
+        if (!grouped[i.customer_id]) grouped[i.customer_id] = [];
+        grouped[i.customer_id].push(i);
+      });
+      customers.forEach(c => {
+        const insts = grouped[c.id] || [];
+        const hasLate = insts.some(i => i.status === 'late');
+        const hasPending = insts.some(i => i.status === 'pending' || i.status === 'partial');
+        if (hasLate) statuses[c.id] = 'late';
+        else if (hasPending) statuses[c.id] = 'pending';
+        else statuses[c.id] = 'clear';
+      });
+      setCustomerStatuses(statuses);
     }
+    const newIds = customers.map(c => c.id).sort().join(',');
+    if (prevStatusIdsRef.current === newIds) return;
+    prevStatusIdsRef.current = newIds;
     if (customers.length > 0) {
       computeStatuses();
     }
   }, [customers]);
 
+  useEffect(() => {
+    const term = search.trim();
+    if (!term) { setSearchResults(null); return; }
+
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const results = await searchCustomers(term);
+        setSearchResults(results);
+      } catch (err) {
+        console.error('Search error:', err);
+        setSearchResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [search]);
+
+  const displayCustomers = search.trim() ? (searchResults || customers) : customers;
+
   const filteredCustomers = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return customers.filter(customer => {
-      const matchesVillage = !selectedVillage || customer.village === selectedVillage;
-      if (!term) return matchesVillage;
-      const fields = [
-        customer.full_name,
-        customer.phone,
-        customer.village,
-        customer.address,
-        customer.national_id,
-        customer.id,
-      ];
-      const matchesSearch = fields.some(field =>
-        field && String(field).toLowerCase().includes(term)
-      );
-      return matchesSearch && matchesVillage;
+    return displayCustomers.filter(customer => {
+      if (!selectedVillage) return true;
+      return customer.village === selectedVillage;
     });
-  }, [customers, search, selectedVillage]);
+  }, [displayCustomers, selectedVillage]);
 
   const activeFiltersCount = (selectedVillage ? 1 : 0) + (search.trim() ? 1 : 0);
 

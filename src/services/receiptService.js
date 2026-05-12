@@ -121,7 +121,35 @@ export async function generateReceipts(selectedInstallments, customersMap, contr
     .update({ last_receipt_number: lastNumber, receipt_year: receiptYear })
     .eq('id', 'app_settings');
 
-  return { alreadyReceipted, generated: newReceipts, receiptIds: newReceiptIds };
+  return { alreadyReceipted, generated: enriched, receiptIds: newReceiptIds };
+}
+
+export async function getCustomerReceipts(customerId, customer, contracts) {
+  if (!isSupabaseConfigured) {
+    const receipts = demoData.receipts.filter(r => r.customer_id === customerId);
+    const contractsMap = {};
+    contracts.forEach(c => { contractsMap[c.id] = c; });
+    return receipts.map(r => ({
+      ...r,
+      customer: { ...customer },
+      contract: contractsMap[r.contract_id] ? { product_name: contractsMap[r.contract_id].product_name } : null,
+    }));
+  }
+
+  const { data: receipts } = await supabase
+    .from('receipts')
+    .select('*')
+    .eq('customer_id', customerId)
+    .order('issue_date', { ascending: false });
+
+  const contractsMap = {};
+  contracts.forEach(c => { contractsMap[c.id] = c; });
+
+  return (receipts || []).map(r => ({
+    ...r,
+    customer: { ...customer },
+    contract: contractsMap[r.contract_id] ? { product_name: contractsMap[r.contract_id].product_name } : null,
+  }));
 }
 
 export async function getReceiptsBySearch(searchTerm) {

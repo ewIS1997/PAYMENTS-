@@ -93,6 +93,7 @@ CREATE TABLE settings (
 -- Indexes for common queries
 CREATE INDEX idx_customers_phone ON customers(phone);
 CREATE INDEX idx_customers_isDeleted ON customers(isDeleted);
+CREATE INDEX idx_customers_created_at ON customers(created_at DESC);
 CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_isDeleted ON products(isDeleted);
 CREATE INDEX idx_contracts_customer_id ON contracts(customer_id);
